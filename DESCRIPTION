@@ -1,0 +1,23 @@
+Package: epca
+Type: Package
+Title: Exploratory Principal Component Analysis
+Version: 1.0
+Date: 2019-09-01
+Author: Fan Chen <fan.chen@wisc.edu>
+Maintainer: Fan Chen <fan.chen@wisc.edu>
+Authors@R: c(person(given = "Fan", family = "Chen", role = c("aut", "cre"), 
+     email = "[fan.chen@wisc.edu]")) 
+Description: Exploratory Principal Component Analysis (PCA) for large scale dataset, powered by sparse multivariate decomposition (SMD), featuring sparse PCA and its applications.
+URL: https:github.com/fchen365/epca
+License: GPL (>= 3)
+Depends:
+    R (>= 3.3),
+Imports:
+    clue,
+    irlba,
+    GPArotation,
+Suggests:
+    matlabr,
+VignetteBuilder: knitr, rmarkdown
+Encoding: UTF-8
+RoxygenNote: 6.1.1

@@ -1,0 +1,28 @@
+---
+title: "Vignette"
+author: "Fan Chen"
+date: "9/17/2019"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to epca package}
+  %\VignetteEngin{knitr:rmarkdown}
+  \usepackage[utf8](inputenc)
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(epca)
+```
+
+## Example
+
+
+```{r cars}
+n = 500
+p = 50
+A = matrix(runif(n*p), n, p)
+A = scale(A, center = T, scale = F) ## WLOG assume A is centered by col
+S = smd(A, k = 7, side = 'both', quiet = F)
+```
+
+
