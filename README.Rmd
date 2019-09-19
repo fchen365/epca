@@ -1,0 +1,30 @@
+---
+title: "Exploratory Principle Component Analysis"
+author: "Fan Chen"
+date: "`r Sys.Date()`"
+header-includes:
+- \usepackage{amsfonts,amsmath,amsthm,amsbsy,amssymb,dsfont,bm,mathtools,mathalfa}
+output: github_document
+# bibliography: bibliography.bib
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "",
+  out.width = "100%"
+)
+```
+
+## Introduction 
+
+EPCA: **e**xploratory **P**rinciple **C**omponent **A**nalysis (PCA) for data with inner nature of sparsity. 
+It contains a series of implementations, including sparse {PCA, independent component analysis (ICA)} via **s**parse **m**ultivariate **d**ecomposition (SMD).
+The SMD is defined as the following optimization of matrix $X$ into the form of $Z B Y^\top$, where $Z$ and $Y$ is sparse, and $B$ is low-rank.
+
+## Installation
+
+## Example

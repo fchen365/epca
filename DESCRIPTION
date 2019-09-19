@@ -7,11 +7,13 @@ Author: Fan Chen <fan.chen@wisc.edu>
 Maintainer: Fan Chen <fan.chen@wisc.edu>
 Authors@R: c(person(given = "Fan", family = "Chen", role = c("aut", "cre"), 
      email = "[fan.chen@wisc.edu]")) 
-Description: Exploratory Principal Component Analysis (PCA) for large scale dataset, powered by sparse multivariate decomposition (SMD), featuring sparse PCA and its applications.
+Description: 
+    Exploratory Principal Component Analysis (PCA) for large-scale dataset, powered by sparse multivariate decomposition (SMD). 
+    The epca features sparse PCA and its applications.
 URL: https:github.com/fchen365/epca
 License: GPL (>= 3)
 Depends:
-    R (>= 3.3),
+    R (>= 3.5),
 Imports:
     clue,
     irlba,

@@ -29,11 +29,11 @@ sparse.pca(A, k = 5, lambda = NULL, input.type = "predictor",
 }
 \value{
 a list of
-   $sdev numeric vector, standard deviation of PC,
+   $sdev - numeric vector, standard deviation of PC,
    $loadings - (sparse) matrix, loadings of PC,
    $center - logical (=centering),
    $scale - logical (=scaling),
-   $n.obs - integer, sample size, =nrow(A),
+   $n.obs - integer, sample size, = nrow(A),
    $n.iter - integer, number of iterations taken,
    $scores - matrix of n*k, the scores of the supplied data on the principal components.
 }
