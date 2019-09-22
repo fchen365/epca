@@ -8,7 +8,7 @@ Exploratory Principle Component Analysis
 <!-- badges: start -->
 <!-- [![lifecycle](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental) -->
 <!-- badges: end -->
-The goal of **e**xploratory **p**rinciple **c**omponent **a**nalysis (EPCA) is to comprehend any data with sparsity nature. The EPCA features sparse PCA via the **s**parse **m**ultivariate **d**ecomposition (SMD). The SMD factorizes a data matrix *X* into the form of *Z**B**Y*<sup>⊤</sup>, where *Z* and *Y* are sparse and orthogonal, and *B* is low-rank. This is accomplished by minimizing the restruction error under the [Frobenius norm](http://mathworld.wolfram.com/FrobeniusNorm.html).
+The goal of **e**xploratory **p**rinciple **c**omponent **a**nalysis (EPCA) is to comprehend any data with sparsity nature. The EPCA features sparse PCA via the **s**parse **m**ultivariate **d**ecomposition (SMD). The SMD factorizes a data matrix *X* into the form of *Z**B**Y*<sup>⊤</sup>, where *Z* and *Y* are sparse and orthogonal, and *B* is low-rank. This is accomplished by minimizing the reconstruction error under the [Frobenius norm](http://mathworld.wolfram.com/FrobeniusNorm.html).
 
 Installation
 ------------
