@@ -23,9 +23,9 @@ knitr::opts_chunk$set(
 <!-- badges: end -->
 
 The goal of **e**xploratory **p**rinciple **c**omponent **a**nalysis (EPCA) is to comprehend any data with sparsity nature. 
-The EPCA features sparse PCA via **s**parse **m**ultivariate **d**ecomposition (SMD).
-The SMD is defined as the following optimization of matrix $X$ into the form of $Z B Y^\top$, where $Z$ and $Y$ is sparse, and $B$ is low-rank.
-
+The EPCA features sparse PCA via the **s**parse **m**ultivariate **d**ecomposition (SMD).
+The SMD factorizes a data matrix $X$ into the form of $Z B Y^\top$, where $Z$ and $Y$ are sparse and orthogonal, and $B$ is low-rank.
+This is accomplished by minimizing the restruction error under the [Frobenius norm](http://mathworld.wolfram.com/FrobeniusNorm.html).
 
 ## Installation
 

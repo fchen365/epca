@@ -1,28 +1,28 @@
 #  smd
 #' Sparse multivariate decomposition (SMD)
 #'
-#' Perform sparse multivariate decomposition (SMD): A = Z B Y^T
+#' Perform sparse multivariate decomposition (SMD): A = Z B Y', where Z and Y are sparse, and B is low-rank.
 #'
 #' @param A matrix or Matrix to be decomposed, of dimensions n x p
 #' @param k integer, rank of approximation
-#' @param lambda numeric, penalized parameter, default is √n√k (for Z) and/or √p√k (for Y)
-#' @param centering logical, whether to (TRUE) center columns of A
-#' @param scaling logical, whether to (TRUE) scale columns of A
-#' @param normalizing logical, whether to (TRUE) normalize rows before rotation, then scale back after
+#' @param lambda numeric, penalized parameter, default is √(nk) (for Z) and/or √(pk) (for Y)
+#' @param centering logical, whether to (default to `TRUE`) center columns of A
+#' @param scaling logical, whether to (default to `TRUE`) scale columns of A
+#' @param normalizing logical, whether to (default to `TRUE`) normalize rows before rotation, then scale back after
 #' @param epsilon numeric, tolerance of precision
 #'
-#' @return a list() containing
-#' $Z - matrix n x k, sparse left singular vector (in column)
-#' $B - matrix k x k, Z^T A Y
-#' $Y - matrix n x k, sparse right singluar vector (in column)
-#' $n.iter - integer, number of iteration taken
+#' @return a list
+#' \item{Z}{an n x k matrix , sparse left singular vector (in column).}
+#' \item{B}{a k x k matrix, calculated by Z' A Y.}
+#' \item{Y}{an n x k matrix, sparse right singluar vector (in column).}
+#' \item{n.iter}{an integer, number of iteration taken.}
 #' @export
 smd = function(A, k = 5,
-                lambda = NULL,
-                side = c('both', 'left', 'right'),
-                centering = F, scaling = F, normalizing = F,
-                max.iter = 1e3, epsilon = 1e-5,
-                quiet = T) {
+               lambda = NULL,
+               side = c('both', 'left', 'right'),
+               centering = F, scaling = F, normalizing = F,
+               max.iter = 1e3, epsilon = 1e-5,
+               quiet = T) {
 
   ## arguments check
   if (side == 'both') {
@@ -137,6 +137,7 @@ smd = function(A, k = 5,
   #   list(Z = Z, B = B, Y = Y, n.iter = n.iter, obj = obj)
   # } else
   #   list(Z = Z.best, B = B.best, Y = Y.best, n.iter = n.iter.best, obj = obj.best)
-  list(Z = Z.best, B = B.best, Y = Y.best, n.iter = n.iter, obj = obj.best)
+  res <- list(Z = Z.best, B = B.best, Y = Y.best, n.iter = n.iter, obj = obj.best)
+  class(res) <- c("smd", class(res))
 }
 

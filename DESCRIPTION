@@ -16,7 +16,7 @@ Description:
 URL: https:github.com/fchen365/epca
 License: GPL-3
 Depends:
-    R (>= 3.5),
+    R (>= 3.3),
 Imports:
     clue,
     irlba,

@@ -3,33 +3,8 @@
 ## ------------------------------------------------------------
 
 ## ------------------------------------------------------------
-## graphical
+## numerical
 ## ------------------------------------------------------------
-## FUN: get symmetric breaks for pheatmap
-getBreaks = function(mat, nbreaks = 101) {
-  m = max(abs(mat))
-  seq(-m, m, length.out = nbreaks)
-}
-
-## FUN: generate (non-linear) breaks between (-a,a)
-## INPUT:
-##   a - numeric, maximum range
-##   length.out - odd integer, number of breaking points
-##   s - integer, order of non-linear
-seq2 = function(a, length.out = 101, s = 2) {
-  a = max(abs(a))
-  # f(x) = a * x^s for x \in [-1,1]
-  by = 2/(length.out - 1)
-  y = rep(0, length.out)
-  for (i in 1:length.out) {
-    x = -1 + by * (i-1)
-    #  = a * x^s
-    y[i] = ifelse(x < 0, -a * (-x)^(s), a * x^(s))
-  }
-  y
-}
-
-
 ## FUN: pretty permutation of columns
 ##      s.t. k-th column gives k-th cluster (ad-hoc)
 ## INPUT:
@@ -39,10 +14,6 @@ permColumn = function(x, s = 2) {
   x[,order(colMeans(row(x) * abs(x)^s))]
 }
 
-
-## ------------------------------------------------------------
-## numerical
-## ------------------------------------------------------------
 ## FUN: calculate a^(num/den)
 fracExp <- function(a, num, den) {
   if (num < 0 || den <= 0 || num %% 1 || den %% 1) {
@@ -61,8 +32,8 @@ norm11 = function(mat) {
   sum(abs(mat))
 }
 
-## evaluate soft-thresholding function given cut-off
-## return $value, and $matrix after soft-thresholding
+#' evaluate soft-thresholding function given cut-off
+#' @return $value and $matrix after soft-thresholding
 evalThres = function(mat, cutoff, norm.fun = norm11) {
   ## mat - matrix or Matrix, to be soft-thresholded
   ## cutoff - soft cutoff
