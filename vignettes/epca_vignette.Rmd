@@ -12,17 +12,24 @@ vignette: >
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(epca)
+library(tidyverse)
 ```
 
 ## Example
 
-
+First, generate a matrix with rank-5 sparse component (i.e., $Z$ and $Y$)
 ```{r cars}
-n = 500
+K = 5
+n = 60
 p = 50
-A = matrix(runif(n*p), n, p)
+S = runif(n * K) %>% matrix(n, K)
+Y = runif(p * K) %>% matrix(p, K) %>% polar %>% soft(constraint = 2 * K)
+Y = Y$matrix
+d = rep(1, K)
+A = S %*% diag(d) %*% t(Y) + matrix(rnorm(n * p, sd = .02), n, p)
 A = scale(A, center = T, scale = F) ## WLOG assume A is centered by col
-S = smd(A, k = 7, side = 'both', quiet = F)
+
+s.smd <- smd(A, k = 5, lambda = 2*K, side = "right")
 ```
 
 

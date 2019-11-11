@@ -33,3 +33,6 @@ a list
 \description{
 Perform sparse multivariate decomposition (SMD): A = Z B Y', where Z and Y are sparse, and B is low-rank.
 }
+\examples{
+
+}

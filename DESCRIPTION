@@ -18,6 +18,7 @@ License: GPL-3
 Depends:
     R (>= 3.3),
 Imports:
+    PMA,
     clue,
     irlba,
     GPArotation,

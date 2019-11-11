@@ -16,6 +16,8 @@
 #' \item{B}{a k x k matrix, calculated by Z' A Y.}
 #' \item{Y}{an n x k matrix, sparse right singluar vector (in column).}
 #' \item{n.iter}{an integer, number of iteration taken.}
+#' @example
+#'
 #' @export
 smd = function(A, k = 5,
                lambda = NULL,
@@ -50,16 +52,16 @@ smd = function(A, k = 5,
   ## No rotation, get result from PMD or SPC
   if (k == 1 && FALSE) {
     if (side == 'both') {
-      S = PMD(A, type = 'standard',
-              sumabsu = min(lambda['left'], sqrt(nrow(A))),
-              sumabsv = min(lambda['right'], sqrt(nrow(A))),
-              niter = max.iter, K = 1, trace = F)
+      S = PMA::PMD(A, type = 'standard',
+                   sumabsu = min(lambda['left'], sqrt(nrow(A))),
+                   sumabsv = min(lambda['right'], sqrt(nrow(A))),
+                   niter = max.iter, K = 1, trace = F)
     } else if (side == 'right') {
-      S = SPC(A, sumabsv = min(lambda['right'], sqrt(nrow(A))),
-              niter = max.iter, K = 1, trace = F)
+      S = PMA::SPC(A, sumabsv = min(lambda['right'], sqrt(nrow(A))),
+                   niter = max.iter, K = 1, trace = F)
     } else {
-      S = SPC(t(A), sumabsv = min(lambda['left'], sqrt(ncol(A))),
-              niter = max.iter, K = 1, trace = F)
+      S = PMA::SPC(t(A), sumabsv = min(lambda['left'], sqrt(ncol(A))),
+                   niter = max.iter, K = 1, trace = F)
     }
     return(list(Z = S$u,
                 B = S$d,
@@ -75,10 +77,10 @@ smd = function(A, k = 5,
   }
   U = S$u
   Z = rotation(U, normalize = normalizing, eps = 0.1 * epsilon)
-  if (side != 'right') Z = softThres(Z, lambda['left'])
+  if (side != 'right') Z = soft(Z, constraint = lambda['left'])$matrix
   V = S$v
   Y = rotation(V, normalize = normalizing, eps = 0.1 * epsilon)
-  if (side != 'left') Y = softThres(Y, lambda['right'])
+  if (side != 'left') Y = soft(Y, constraint = lambda['right'])$matrix
   obj = norm(t(Z) %*% A %*% Y, 'F')
   obj.best = -Inf
   n.iter.best = 0
@@ -86,7 +88,7 @@ smd = function(A, k = 5,
   converge = c(Z = Inf, Y = Inf, Obj = Inf)
   n.iter = 0
   while (max(converge[c('Z', 'Y')]) > epsilon &&
-         n.iter < n.iter.best + max(1e2, max.iter/10) &&
+         # n.iter < n.iter.best + max(1e2, max.iter/10) && ## early stopping
          n.iter < max.iter) {
     n.iter = n.iter + 1
 
@@ -94,7 +96,7 @@ smd = function(A, k = 5,
     U = polar(A %*% Y)
     Z.new = rotation(U, normalize = normalizing, eps = 0.1 * epsilon)
     if (side != 'right')
-      Z.new = softThres(Z.new, lambda['left'])
+      Z.new = soft(Z.new, constraint = lambda['left'])$matrix
     obj.new = norm(t(Z.new) %*% A %*% Y, 'F')
     if (converge['Z'] < epsilon || obj.new < obj) {
       Z.new = matchCols(Z.new, Z)
@@ -106,7 +108,7 @@ smd = function(A, k = 5,
     V = polar(t(A) %*% Z)
     Y.new = rotation(V, normalize = normalizing, eps = 0.1 * epsilon)
     if (side != 'left')
-      Y.new = softThres(Y.new, lambda['right'])
+      Y.new = soft(Y.new, constraint = lambda['right'])$matrix
     obj.new = norm(t(Z) %*% A %*% Y.new, 'F')
     if (converge['Y'] < epsilon || obj.new < obj) {
       Y.new = matchCols(Y.new, Y)
@@ -138,6 +140,6 @@ smd = function(A, k = 5,
   # } else
   #   list(Z = Z.best, B = B.best, Y = Y.best, n.iter = n.iter.best, obj = obj.best)
   res <- list(Z = Z.best, B = B.best, Y = Y.best, n.iter = n.iter, obj = obj.best)
-  class(res) <- c("smd", class(res))
+  # class(res) <- c("smd", class(res))
 }
 
