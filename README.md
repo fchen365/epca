@@ -10,11 +10,9 @@
 [![lifecycle](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
 <!-- badges: end -->
 
-`epca` is an R package for **e**xploratory **p**rincipal **c**omponent
-**a**nalysis. The goal of `epca` is to comprehend any data matrix that
-contains *low-rank* and *sparse* underlying signals of interest.
-
-`epca` features two key tools:
+`epca` is an R package for comprehending any data matrix that contains
+*low-rank* and *sparse* underlying signals of interest. The package
+currently features two key tools:
 
   - `sca` for **s**parse principal **c**omponent **a**nalysis.
   - `sma` for **s**parse **m**atrix **a**pproximation, a two-way data
@@ -37,8 +35,8 @@ contains *low-rank* and *sparse* underlying signals of interest.
 
 <!-- or the development version from [GitHub](https://github.com/) with: -->
 
-`epca` is not yet on CRAN. You could install development version from
-[GitHub](https://github.com/) with:
+`epca` is not yet on CRAN. You could install the development version
+from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
