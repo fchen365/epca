@@ -2,20 +2,20 @@
 % Please edit documentation in R/utility.R
 \name{inner}
 \alias{inner}
-\title{Custom inner produce of matrices}
+\title{Matrix Inner Product}
 \usage{
-inner(X, Y, FUN = crossprod, ...)
+inner(X, Y, FUN = "crossprod", ...)
 }
 \arguments{
-\item{X, Y}{matrix or Matrix.}
+\item{X, Y}{\code{matrix} or \code{Matrix}.}
 
-\item{FUN}{function, which takes in two vectors and returns a numeric value.}
+\item{FUN}{\code{function} or a \code{character(1)} name of base function. The function should take in two vectors as input and ouput a \code{numeric(1)} result.}
 
-\item{...}{additional parameters for FUN.}
+\item{...}{additional parameters for \code{FUN}.}
 }
 \value{
-a matrix of <X, Y>
+\code{matrix}, inner product of \code{X} and \code{Y}.
 }
 \description{
-Calculate custom matrix inner product Z = <X, Y>, where Z[i,j] = FUN(X[,i], Y[,j]).
+Calculate the custom matrix inner product, Z = <X, Y>, where Z\link{i,j} = FUN(X\link{,i}, Y\link{,j}).
 }

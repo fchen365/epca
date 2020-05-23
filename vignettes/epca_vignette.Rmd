@@ -1,11 +1,11 @@
 ---
-title: "Vignette"
-author: "Fan Chen"
+title: "Exploratory Principal Component Analysis with `epca`"
+author: "Fan Chen (fan.chen@wisc.edu)"
 date: "9/17/2019"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Introduction to epca package}
-  %\VignetteEngin{knitr:rmarkdown}
+  \VignetteIndexEntry{Introduction to `epca`}
+  \VignetteEngin{knitr:rmarkdown}
   \usepackage[utf8](inputenc)
 ---
 
@@ -17,19 +17,9 @@ library(tidyverse)
 
 ## Example
 
-First, generate a matrix with rank-5 sparse component (i.e., $Z$ and $Y$)
-```{r cars}
-K = 5
-n = 60
-p = 50
-S = runif(n * K) %>% matrix(n, K)
-Y = runif(p * K) %>% matrix(p, K) %>% polar %>% soft(constraint = 2 * K)
-Y = Y$matrix
-d = rep(1, K)
-A = S %*% diag(d) %*% t(Y) + matrix(rnorm(n * p, sd = .02), n, p)
-A = scale(A, center = T, scale = F) ## WLOG assume A is centered by col
 
-s.smd <- smd(A, k = 5, lambda = 2*K, side = "right")
+```{r cars}
+# code
 ```
 
 

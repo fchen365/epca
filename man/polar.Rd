@@ -2,18 +2,23 @@
 % Please edit documentation in R/utility.R
 \name{polar}
 \alias{polar}
-\title{Polar decomposition}
+\title{Polar Decomposition}
 \usage{
-polar(X)
+polar(x)
 }
 \arguments{
-\item{X}{matrix or Matrix.}
+\item{x}{a \code{matrix} or \code{Matrix}, which is presumed full-rank.}
 }
 \value{
-a matrix of the U part
+a \code{matrix} of the unitary part of the polar decomposition.
 }
 \description{
-Takes a matrix X, of dimensions n by p, and calculate polar components,
-two matrices P and Z, such that X = UP,
-assuming X has full col rank
+Perform the polar decomposition of an n x p (n > p) matrix X into U P,
+where U is an n x p matrix with orthogonal columns (i.e. \code{crossprod(U)} is the identity matrix),
+and P is a p x p positive-semidefinite Hermitian matrix.
+The function returns the U matrix.
+This is a helper function of \code{\link[=prs]{prs()}}.
+}
+\references{
+\link{https://en.wikipedia.org/wiki/Polar_decomposition}
 }

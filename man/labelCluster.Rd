@@ -2,19 +2,18 @@
 % Please edit documentation in R/utility.R
 \name{labelCluster}
 \alias{labelCluster}
-\title{Label cluster}
+\title{Label Cluster}
 \usage{
 labelCluster(x, ties.method = "random")
 }
 \arguments{
-\item{x}{matrix, nNode x nBlock, non-negative, higher value means more likely}
+\item{x}{\code{matrix} with non-negative entries, where \code{x[i,j]} is the estimated likelihood (or any equivalent measure) of node i belongs to block j. The higher the more likely.}
 
-\item{ties.method}{a character string specifying how ties are treated,
-see \code{\link[base]{rank}}, only "random", "first", "last" are allowed.}
+\item{ties.method}{\code{character}, how should ties be handled, "random", "first", "last" are allowed. See \code{\link[base:rank]{base::rank()}} for details.}
 }
 \value{
-integer vector %in% 1:ncol(x)
+\code{integer} vector of the same length as \code{x}. Each entry is one of 1, 2, ..., \code{ncol(x)}.
 }
 \description{
-Given the block membership matrix x, where x[i,j] is the likelihood of node i belongs to block j. Finds the cluster label.
+Assign cluster labels to each row from the membership matrix.
 }

@@ -1,187 +1,13 @@
-## ------------------------------------------------------------
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## what: helper functions
-## ------------------------------------------------------------
-
-## ------------------------------------------------------------
-## numerical
-## ------------------------------------------------------------
-#' Calculate fractional exponent/power
-#'
-#' Calculate fractional exponent/power, a^(num/den), where a could be negative.
-#' @param a numeric, base (could be nagetive).
-#' @param num positive integer, numerator of the exponent.
-#' @param den positive integer, denominator of the exponent.
-#' @return numeric, the evaluated a^(num/den)
-#' @export
-fracExp <- function(a, num, den) {
-  if (num < 0 || den <= 0 || num %% 1 || den %% 1) {
-    stop("num and den should be meaningful integers.")
-  }
-  if (den %% 2) {
-    res = (abs(a) ^ (1/den)) * sign(a)
-  } else {
-    res = a ^ (1 / den)
-  }
-  return(res ^ num)
-}
-
-#' Calculate (1,1)-norm
-#'
-#' This is a helper function to \code{\link{soft}}.
-norm11 = function(mat) {
-  sum(abs(mat))
-}
+## who: fan chen (fan.chen@wisc.edu)
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-#' Soft-thresholding
-#'
-#' Evaluate the soft-thresholding function with either
-#' (1) a cut-off value on elements, or
-#' (2) a overall constraint on the (1,1)-norm.
-#'
-#' @param mat matrix or Matrix, to be soft-thresholded.
-#' @param cutoff numeric, soft-thresholding cutoff. One and only one of cutoff and constraint should/can be specified.
-#' @param constraint numeric, the overall (1,1)-norm constraint value (\eqn{\gamma}), i.e. \code{\link{norm11}}(mat) \eqn{\le \gamma} . One and only one of cutoff and constraint should/can be specified.
-#' @param epsilon numeric, precision tolerance.
-#' @details For the second option (constrainted soft-thresholding), this function uses a binary search to find the cut-off value.
-#' @return a list that contains:
-#' \item{matrix}{matrix, the matrix that results from soft-thresholding}
-#' \item{norm}{numeric, the norm of the matrix after soft-thresholding. This value is close to constraint if using the second option.}
-#' @export
-soft <- function(mat, cutoff = NULL, constraint = NULL,
-                 epsilon = 2*.Machine$double.eps) {
-  if (is.null(cutoff) + is.null(constraint) != 1)
-    stop("Either cutoff or constraint should/can be specified.")
-  if (!is.null(cutoff)) {
-    sign.mat = sign(mat)
-    abs.mat = abs(mat)
-    res = list()
-    res$matrix = sign.mat * pmax(abs.mat - cutoff, 0)
-    res$norm = norm11(res$matrix)
-  }
-  if (!is.null(constraint)) {
-    ## no thresholding needed
-    res = soft(mat, cutoff = 0)
-    if (res$norm <= constraint) return(res)
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## ------ clustering ------ 
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    ## binary search
-    lower = 0 ## whose res$norm > constraint
-    upper = max(abs(mat)) ## whose res$norm = 0
-    while (upper - lower > epsilon) {
-      mid = (lower + upper) / 2
-      res = soft(mat, cutoff = mid)
-      if (res$norm > constraint) {
-        lower = mid
-      } else
-        upper = mid
-    }
-  }
-  return(res)
-}
-
-
-#' Polar decomposition
-#'
-#' Takes a matrix X, of dimensions n by p, and calculate polar components,
-#' two matrices P and Z, such that X = UP,
-#' assuming X has full col rank
-#' @param X matrix or Matrix.
-#' @return a matrix of the U part
-#' @export
-polar = function(X) {
-  if (nrow(X) < ncol(X))
-    stop('Input should be a tall (or at least square) matrix.')
-  if (Matrix::rankMatrix(X) < ncol(X))
-    stop('X is not full rank.')
-  S = svd(X)
-  U.part <- S$u %*% t(S$v)
-  # P.part <- S$v %*% diag(S$d) %*% t(S$v)
-  return(U.part)
-}
-
-#' Find root matrix
-#'
-#' Find X from the Gram matrix X^T X, i.e. sqrt(crossprod(X)).
-#'
-rootmatrix <- function(x) {
-  x.eigen <- eigen(x)
-  d <- x.eigen$values
-  d <- (d + abs(d))/2
-  v <- x.eigen$vectors
-  root = v %*% diag(sqrt(d)) %*% t(v)
-  dimnames(root) <- dimnames(x)
-  return(root)
-}
-
-#' Orthogonal rotation for the SMD
-#'
-#' Perform varimax rotation on X from right.
-#' Flip the signs of columns so that the resulting matrix is positive skewed.
-#' @param X matrix or Matrix.
-#' @param normalize logical, whether to (default to FALSE) first normalize rows before (and scale back afterward) the rotation.
-#' @param eps pricision tolerance.
-#' @return the rotated matrix
-#' @export
-rotation = function(X, normalize = F, eps = 1e-6) {
-  if (is.null(dim(X)) || ncol(X) == 1) {
-    warning('Input only one column; no rotation applied.')
-    return(X)
-  }
-  R = varimax(X, normalize = normalize, eps = eps)$rotmat
-  L = X %*% R
-  ## (1) switch signs s.t. each column has positive third moment.
-  signs = sign(colSums(L^3))
-  L = t(t(L) * signs) ## L = sweep(L, 2, signs, '*')
-  ## (2) order columns by Var(Z^2)
-  dev = apply(R^2, 2, var)
-  L = L[,order(dev, decreasing = T)]
-  return(L)
-}
-
-#' Custom inner produce of matrices
-#'
-#' Calculate custom matrix inner product Z = <X, Y>, where Z[i,j] = FUN(X[,i], Y[,j]).
-#'
-#' @param X,Y matrix or Matrix.
-#' @param FUN function, which takes in two vectors and returns a numeric value.
-#' @param ... additional parameters for FUN.
-#' @return a matrix of <X, Y>
-#' @export
-inner = function(X, Y, FUN = crossprod, ...) {
-  t(apply(X, 2, function(x) {
-    apply(Y, 2, function(y) FUN(x, y))
-  }))
-}
-
-#' Proportion of variance explained
-#'
-#' Calculate the variance in a matrix explained by a set of linear transformation, (e.g. eigenvectors).
-#' @param mat matrix or Matrix, the original data matrix X or cov(X) = crossprod(X) / (nrow(X) - 1)
-#' @param V coefficients of linear transformation, e.g. a set of loadings in PCA.
-#' @param type the input matrix for SMD (not used at the moment), either
-#'           'predictor' (original data matrix) or 'Gram' (useful when n >> p).
-#' @return a numeric value between [0,1], the proportion of variance in mat explained by Y.
-#' @export
-var.explain = function(mat, V, type = "predictor") {
-  if (type == "predictor") {
-    V <- as.matrix(V)
-    XV = mat %*% V %*% solve(t(V) %*% V) %*% t(V)
-    norm(XV, type = 'F')^2 / norm(mat, 'F')^2
-  } else if (type == "Gram"){
-    V <- as.matrix(V)
-    TV <- sum(svd(mat)$d^2) ## total variance
-    CL <- ifelse(sqrt(colSums(V^2)),sqrt(colSums(V^2)),0) ## column length, replace 0 with 1
-    S <- mat %*% (V / CL) ## component scores
-    EV <- diag(qr.R(qr(S))^2) ## explained variance
-    sum(EV)/TV
-    # CI = solve(crossprod(V))
-    # sum(diag(V %*% CI %*% t(V) %*% mat %*% V %*% CI %*% t(V)))
-  }
-}
-
-## ------------------------------------------------------------
-## clustering
-## ------------------------------------------------------------
 #' Permute columns of a block membership matrix
 #'
 #' Perform column permutation of block membership matrix for aesthetical visualization.
@@ -191,91 +17,249 @@ var.explain = function(mat, V, type = "predictor") {
 #' @param s integer, order of non-linear
 #' @export
 permColumn = function(x, s = 2) {
-  if (!is.array(x)) stop("x is not array like.")
   x[,order(colMeans(row(x) * abs(x)^s))]
-}
+} 
 
 
-#' Label cluster
+#' Label Cluster
 #'
-#' Given the block membership matrix x, where x[i,j] is the likelihood of node i belongs to block j. Finds the cluster label.
-#' @param x matrix, nNode x nBlock, non-negative, higher value means more likely
-#' @param ties.method a character string specifying how ties are treated,
-#'                  see \code{\link[base]{rank}}, only "random", "first", "last" are allowed.
-#' @return integer vector %in% 1:ncol(x)
+#' Assign cluster labels to each row from the membership matrix. 
+#' @param x `matrix` with non-negative entries, where `x[i,j]` is the estimated likelihood (or any equivalent measure) of node i belongs to block j. The higher the more likely.
+#' @param ties.method `character`, how should ties be handled, "random", "first", "last" are allowed. See [base::rank()] for details.
+#' @return `integer` vector of the same length as `x`. Each entry is one of 1, 2, ..., `ncol(x)`.
 labelCluster <- function(x, ties.method = "random") {
-  x1 <- t(apply(-abs(x), 1, rank, ties.method = ties.method))
-  apply(x1, 1, which.min)
+  rank <- apply(-abs(x), 1, rank, ties.method = ties.method)
+  apply(t(rank), 1, which.min)
 }
 
 
-#' Match two matrices
-#'
-#' Match the columns of two matrices of the same size.
-#' This is accomplished by solving an optimization over column permutation.
-#' Given two matrices, X and X.new, find permutation p() that minimizes
-#'      sum_i similarity(X.new[,p(i)], X[,i]),
-#' where the similarity can be euclidean distance, cosine, maximum difference.
-#'
-#' @param X.new,X matrix or Matrix, with the same dimension.
-#' @param method one of "maximum" (default), "cosine", or "euclidean".
-#' @return X.new after permuting the columns.
+#' Mis-Classification Rate (MCR)
+#' 
+#' Compute the empirical MCR, assuming that #{cluster} = #{block}, 
+#' This calculation allows a permutation on clusters.
+#' 
+#' @param clusters vector of `integer` or `factor`, estimated cluster membership.
+#' @param truth a vector of the same length as `clusters`, the true cluster labels.
+#' @return `numeric`, the MCR.
 #' @export
-matchCols = function(X.new, X, method = 'maximum') {
-  ## check
-  if (!is.array(X.new) || dim(X.new)[2] == 1) return(X.new)
-
-  ## (1) similarity (cosine)
-  if (method == 'cosine') {
-    norm.new = sqrt(colSums(X.new^2))
-    norm = sqrt(colSums(X^2))
-    cosine = t(X.new) %*% X / (norm.new %*% t(norm))
-    x = 1 - cosine
-  }
-  ## (2) usual distance (euclidean)
-  if (method == 'euclidean') {
-    euclidean = function(x, y) sqrt(sum((x-y)^2))
-    x = inner(X.new, X, euclidean)
-  }
-  ## (3) supremum norm (maximum)
-  if (method == 'maximum') {
-    maximum = function(x, y) max(abs(x-y))
-    x = inner(X.new, X, maximum)
-  }
-
-  p = clue:: solve_LSAP(x, maximum = F)
-  X.new[,as.vector(p)]
-}
-
-
-## FUN: calculate the empirical proportion of misclustered nodes
-##      assuming #{cluster} = #{block},
-##      allowing permutation on clusters
-# INPUT:
-##     clusters - vector of intergers or factors, cluster membership (estimated)
-##     truth - true block labels
 misClustRate = function(cluster, truth) {
   ## check
   if (length(unique(cluster)) != length(unique(truth))) {
-    stop("#{cluster} != #{block}. \n",
-         "Try send in cluster (and truch) as a factor vector, ",
-         "with matching number of cluters.")
+    stop("cluster and truth shoule be factor vectors with equal number of levels.")
   }
-
+  
   # count cluster labels in each block
   # clusterCounts[i,j] = #{cluster i ^ block j}
   clusterCounts <- table(cluster, truth)
-
+  
   # maximum matches, linear solver
-  p = clue:: solve_LSAP(clusterCounts, maximum = T)
+  p = clue::solve_LSAP(clusterCounts, maximum = T)
   correct <- sum(clusterCounts[cbind(seq_along(p), p)])
   return(1 - correct / length(truth))
 }
 
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## ------ matrix ------
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#' Polar Decomposition
+#' 
+#' Perform the polar decomposition of an n x p (n > p) matrix X into U P, 
+#' where U is an n x p matrix with orthogonal columns (i.e. `crossprod(U)` is the identity matrix), 
+#' and P is a p x p positive-semidefinite Hermitian matrix.
+#' The function returns the U matrix. 
+#' This is a helper function of [prs()].
+#' 
+#' @param x a `matrix` or `Matrix`, which is presumed full-rank.
+#' @return a `matrix` of the unitary part of the polar decomposition.
+#' @references [https://en.wikipedia.org/wiki/Polar_decomposition]
+#' @export
+polar = function(x) {
+  stopifnot(nrow(x) >= ncol(x))
+  stopifnot(Matrix::rankMatrix(x) == ncol(x))
+  s = svd(x)
+  U <- tcrossprod(s$u, s$v)
+  # P <- s$v %*% diag(S$d) %*% t(s$v)
+  return(U)
+}
 
-## ------------------------------------------------------------
-## rotation variants via gradient projection
-## ------------------------------------------------------------
+#' Find root matrix
+#' 
+#' Find `X` from the Gram matrix (i.e., `crossprod(X)`).
+#' @param x a symmetric `matrix`.
+rootmatrix <- function(x) {
+  stopifnot(isSymmetric(x))
+  x.eigen <- eigen(x)
+  d <- x.eigen$values
+  d <- (d + abs(d))/2
+  v <- x.eigen$vectors
+  root = v %*% diag(sqrt(d)) %*% t(v)
+  dimnames(root) <- dimnames(x)
+  return(root)
+}
+
+#' Matrix Inner Product
+#'
+#' Calculate the custom matrix inner product, Z = <X, Y>, where Z[i,j] = FUN(X[,i], Y[,j]).
+#'
+#' @param X,Y `matrix` or `Matrix`.
+#' @param FUN `function` or a `character(1)` name of base function. The function should take in two vectors as input and ouput a `numeric(1)` result.
+#' @param ... additional parameters for `FUN`.
+#' @return `matrix`, inner product of `X` and `Y`.
+#' @export
+inner = function(X, Y, FUN = "crossprod", ...) {
+  stopifnot(length(FUN) == 1) 
+  if (is.character(FUN)) FUN <- get(FUN)
+  res <- apply(X, 2, function(x) {
+    apply(Y, 2, function(y) FUN(x, y))
+  })
+  t(res)
+}
+
+#' Proportion of Variance Explained (PVE)
+#'
+#' Calculate the variance in a matrix explained by a set of linear transformation, (e.g. eigenvectors).
+#' @param mat `matrix` or `Matrix`, the original data matrix X or cov(X) = crossprod(X) / (nrow(X) - 1)
+#' @param V `matrix`, coefficients of linear transformation, e.g., loadings (in PCA).
+#' @param is.cov `logical`, whether the input matrix is a covariance matrix or a Gram matrix.
+#' @return a `numeric` value between [0,1], the proportion of variance in mat explained by Y.
+#' @export
+pve = function(mat, V, is.cov = F) {
+  if (!is.cov) {
+    # V <- as.matrix(V)
+    XV = mat %*% V %*% solve(t(V) %*% V) %*% t(V)
+    Matrix::norm(XV, type = 'F')^2 / 
+      Matrix::norm(mat, 'F')^2
+  } else {
+    # V <- as.matrix(V)
+    ## total variance
+    TV <- sum(svd(mat)$d ^ 2) 
+    ## column length, replace 0 with 1
+    CL <- sqrt(colSums(V ^ 2)) 
+    CL <- ifelse(CL, CL, 0) 
+    ## component scores
+    S <- mat %*% (V / CL) 
+    ## explained variance
+    EV <- diag(qr.R(qr(S)) ^ 2) 
+    sum(EV) / TV
+    # CI = solve(crossprod(V))
+    # sum(diag(V %*% CI %*% t(V) %*% mat %*% V %*% CI %*% t(V)))
+  }
+}
+
+#' Cumulative Proportion of Variance Explained (CPVE)
+#' 
+#' Calculate the CPVE. 
+#' @inheritParams pve
+#' @return a `numeric` vector of length `ncol(V)`, the i-th value is the CPVE of the first i columns in `V`.
+#' @seealso [pve]
+#' @export
+cpve <- function(mat, V, is.cov = F) {
+  sdev = apply(mat %*% V, 2, sd) 
+  ord <- order(sdev, decreasing = T)
+  pve <- rep(0, ncol(V))
+  for (i in 1:ncol(V)) {
+    pve[i] <- pve(mat, V[,ord[1:i]], is.cov)
+  }
+  pve
+}
+
+#' Matrix Column Distance
+#'
+#' Compute the distance between two matrices.
+#' The distance between two matrices is defined as the sum of distances between column pairs. 
+#' This function matches the columns of two matrices, such that the matrix distance (i.e., the sum of paired column distances) is minimized.
+#' This is accomplished by solving an optimization over column permutation.
+#' Given two matrices, `x` and `y`, find permutation p() that minimizes
+#'      sum_i similarity(`x[,p(i)], y[,i]`),
+#' where the `similarity()` can be "euclidean" distance, 1 - "cosine", or "maximum" difference (manhattan distance).
+#' The solution is computed by [clue::solve_LSAP()].
+#'
+#' @param x,y `matrix` or `Matrix`, of the same number of rows. The columns of `x` and `y` will be scaled to unit length.
+#' @param method distance measure, "maximum", "cosine", or "euclidean" are implemented.
+#' @return a `list` of four components:
+#' \item{dist}{`dist`, the distance matrix.}
+#' \iten{match}{`solve_LSAP`, the column matches.}
+#' \item{value}{`numeric` vector, the distance between pairs of columns.} 
+#' \item{method}{`character`, the distance measure used.} 
+#' \item{nrow}{`integer`, the dimention of the input matrices, i.e., `nrow(x)`.}
+#' @seealso [clue::solve_LSAP]
+#' @export
+dist.matrix = function(x, y, method = 'euclidean') {
+  ## check
+  stopifnot(dim(x) == dim(y))
+  if (is.null(dim(x))) {
+    x <- as.matrix(x)
+    y <- as.matrix(y)
+  }
+  x = t(t(x) / sqrt(colSums(x ^ 2)))
+  y = t(t(y) / sqrt(colSums(y ^ 2)))
+  
+  # s <- svd(crossprod(x, y))
+  # sum(1 - s$d ^ 2)
+  
+  if (method == "sine") {
+    ## sin ^ 2
+    FUN = function(x, y) 1 - crossprod(x, y)^2
+  } else if (method == "euclidean") {
+    ## euclidean 
+    FUN = function(x, y) sqrt(sum((x - y) ^ 2))
+  } else if (method == "maximum") {
+    ## supremum norm (manhattan)
+    FUN = function(x, y) max(abs(x - y))
+  }
+  
+  dist = inner(x, y, FUN)
+  match = clue::solve_LSAP(dist, maximum = F)
+  value = dist[cbind(seq_along(match), match)]
+
+  list(dist = dist,
+       match = match,
+       value = value,
+       method = method,
+       nrow = nrow(x))
+}
+
+#' Matrix Distance
+#' @inheritParams dist.matrix
+#' @return `numeric`, the distance between two matrices.
+distance <- function(x, y, method = "euclidean") {
+  dist <- dist.matrix(x, y, method)
+  sum(dist$value)
+}
+
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## ------ rotation ------ 
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#' Varimax Rotation
+#'
+#' Perform varimax rotation.
+#' Flip the signs of columns so that the resulting matrix is positive-skewed.
+#' 
+#' @param x a `matrix` or `Matrix`.
+#' @param rotate `character(1)`, rotation method, "varimax" (default) or "absmin".
+#' @param normalize `logical`, whether to (default to `FALSE`) first normalize rows before (and scale back afterward) the rotation.
+#' @param eps `numeric` pricision tolerance.
+#' @return the rotated matrix of the same dimension as `x`.
+rotation = function(x, 
+                    rotate = "varimax",
+                    normalize = F, 
+                    flip = T,
+                    eps = 1e-6) {
+  stopifnot(is.array(x)) 
+  stopifnot(rotate %in% c("varimax", "absmin"))
+  
+  rotate.fun <- get(rotate)
+  r = rotate.fun(x, normalize = normalize, eps = eps)
+  y = x %*% r$rotmat
+  
+  if (flip) {
+    skewness <- colSums(y ^ 3)
+    y <- t(t(y) * sign(skewness))
+  }
+  
+  return(y)
+}
+
 #' The varimax criteria
 #'
 #' Calculate the varimax criteria.
@@ -285,13 +269,31 @@ varimax.criteria = function(mat) {
   sum(apply(mat^2, 2, var))
 }
 
-#' Re-implementation of varimax
-#' This is an extended version of \code{\link[stats]{varimax}}, allowing control of iteration.
+#' Varimax Rotation 
+#' 
+#' This is a re-implementation of [stat::varimax], 
+#' which (1) adds a parameter for the maximum number of iterations, 
+#' (2) sets the default `normalize` parameter to `FALSE`,  
+#' (3) outputs the number of iteration taken, and 
+#' (4) returns regular `matrix` rather than in `loadings` class.
 #' @inheritParams stats::varimax
-#' @export
-varimax <- function(x, normalize = F, eps = 1e-05, maxit = 1000L) {
+#' @param maxit `integer`, maximum number of iteration (default to 1,000). 
+#' @return A list with three elements: 
+#' \item{rotated}{the rotated matrix.} 
+#' \item{rotmat}{the (orthogonal) rotation matrix.}
+#' \item{n.iter}
+#' @seealso [stats::varimax]
+varimax = function(x,
+                   normalize = F,
+                   eps = 1e-05,
+                   maxit = 1000L) {
   nc <- ncol(x)
-  if (nc < 2) return(x)
+  if (nc < 2) {
+    warnings("Rotation of a single-column matrix is invalid.")
+    return(list(loadings = x, 
+                rotmat = matrix(1), 
+                n.iter = 1))
+  }
   if (normalize) {
     sc <- sqrt(drop(apply(x, 1L, function(x) sum(x^2))))
     x <- x/sc
@@ -302,51 +304,7 @@ varimax <- function(x, normalize = F, eps = 1e-05, maxit = 1000L) {
   for (i in seq_len(maxit)) {
     z <- x %*% TT
     cm2 = colMeans(z^2)
-    B <- t(x) %*% (z^3 - z %*% diag(cm2))
-    sB <- La.svd(B)
-    TT <- sB$u %*% sB$vt
-    dpast <- d
-    d <- sum(sB$d)
-    if (d < dpast * (1 + eps)) break
-  }
-  z <- x %*% TT
-  if (normalize) z <- z * sc
-  dimnames(z) <- dimnames(x)
-  list(loadings = z, rotmat = TT, iter = i)
-}
-
-
-#' The absmax2 criteria
-#'
-#' Calculate the absmax2 criteria.
-#' @references F. Chen, K Rohe. SPCA paper.
-#' @export
-varimax2.criteria = function(mat) {
-  sum((apply(mat^2, 2, var) - 2 * colMeans(mat^2))^2)
-}
-
-
-## FUN: given x \in \R^{p \times k}, find the orthogonal matrix (rotation) T that
-##      maximizes the varimax2 objective (z = x %*% T),
-##      varimax2(z) = \sum_{j=1}^k \[\text{Var}(z_{\cdot j}^2) - 2\]^2
-#' @export
-varimax2 = function (x, normalize = F, eps = 1e-05, maxit = 1000L)
-{
-  nc <- ncol(x)
-  if (nc < 2)
-    return(x)
-  if (normalize) {
-    sc <- sqrt(drop(apply(x, 1L, function(x) sum(x^2))))
-    x <- x/sc
-  }
-  p <- nrow(x)
-  TT <- diag(nc)
-  d <- 0
-  for (i in seq_len(maxit)) {
-    z <- x %*% TT
-    cs2 = colSums(z^2)
-    cs4 = colSums(z^4)
-    B <- t(x) %*% (z^3 - 3 * z %*% diag(cs2) / p) %*% diag(cs4 - 3 * cs2^2 / p)
+    B <- t(x) %*% (z^3 - z %*% diag(cm2)) 
     sB <- La.svd(B)
     TT <- sB$u %*% sB$vt
     dpast <- d
@@ -358,31 +316,485 @@ varimax2 = function (x, normalize = F, eps = 1e-05, maxit = 1000L)
   if (normalize)
     z <- z * sc
   dimnames(z) <- dimnames(x)
-  list(loadings = z, rotmat = TT, iter = i)
+  list(loadings = z, rotmat = TT, n.iter = i)
 }
 
-#' The absmin criteria
+#' Absmin Criteria
 #'
 #' Calculate the absmin criteria.
-#' @references F. Chen, K Rohe. SPCA paper.
-#' @export
-absmin.criteria = function(mat) {
-  sum(abs(mat))
+#' This is a helper function for [absmin].
+#' @inheritParams absmin
+absmin.criteria = function(L) {
+  sum(abs(L))
 }
 
-## FUN: given x \in \R^{p \times k}, find the orthogonal matrix (rotation) T that
-##      minimizes the absmin objective (z = x %*% T),
-##      absmin_criteria(z) = \sum_{i=1}^p \sum_{j=1}^k |z_ij|
-#' @export
-absmin = function (L, Tmat = diag(ncol(L)), normalize = FALSE,
-                   eps = 1e-5, maxit = 1000) {
-  GPArotation::GPForth(L, Tmat = Tmat, method = "absmin",
-                       normalize = normalize, ## al = 0.1,
-                       eps = eps, maxit = maxit)
-}
-
-## FUN: gradient of absmin
+#' Gradient of Absmin Criterion 
+#' 
+#' This is a helper function for [absmin].
+#' @inheritParams absmin
 vgQ.absmin = function (L) {
-  list(Gq = sign(L), f = absmin.criteria(L), Method = "absmin")
+  list(Gq = sign(L), 
+       f = absmin.criteria(L), 
+       Method = "absmin")
 }
 
+#' Absmin Rotation
+#' 
+#' Given a p x k matrix `x`, 
+#' finds the orthogonal matrix (rotation) that minimizes 
+#' the [absmin.criteria],
+#' . 
+#' 
+#' @param L a `matrix` or `Matrix`. 
+#' @param Tmat `matrix`, initial rotation matrix.
+#' @inheritParams stats::varimax
+#' @inheritParams varimax
+#' @return A list with three elements: 
+#' \item{rotated}{the rotated matrix.} 
+#' \item{rotmat}{the (orthogonal) rotation matrix.}
+#' \item{n.iter}
+#' @seealso [GPArotation::GPForth]
+absmin <- function(L, 
+                  Tmat = diag(ncol(L)), 
+                  normalize = FALSE,
+                  eps = 1e-5, 
+                  maxit = 1000L) {
+  nc <- ncol(L)
+  if (nc < 2) {
+    warnings("Rotation of a single-column matrix is invalid.")
+    return(list(loadings = L, 
+                rotmat = matrix(1), 
+                n.iter = 1))
+  }
+  res <- GPArotation::GPForth(L, 
+                              Tmat = Tmat, 
+                              method = "absmin",
+                              normalize = normalize, 
+                              eps = eps, 
+                              maxit = maxit)
+  list(loadings = res$loadings, 
+       rotmat = res$Th, 
+       n.iter = nrow(res$Table))
+}
+
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## ------ shrinkage ------
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#' Calculate fractional exponent/power
+#'
+#' Calculate fractional exponent/power, a^(num/den), where a could be negative.
+#' @param `numeric(1)`, base (could be nagetive).
+#' @param num a positive `integer`, numerator of the exponent.
+#' @param den a positive `integer`, denominator of the exponent.
+#' @return `numeric`, the evaluated a^(num/den)
+exp.frac <- function(a, num, den) {
+  if (num < 0 || den <= 0 || num %% 1 || den %% 1) {
+    stop("num and den should be meaningful integers.")
+  }
+  if (den %% 2) {
+    res = (abs(a) ^ (1/den)) * sign(a)
+  } else {
+    res = a ^ (1 / den)
+  }
+  return(res ^ num)
+}
+
+#' Element-wise Matrix Norm
+#' 
+#' Compute element-wise matrix Lp-norm. 
+#' This is a helper function to [shrinkage()].
+#' @param mat a `matrix` or `Matrix`.
+#' @param p `numeric(1)`, the p for defining the Lp norm.
+#' @return `numeric(1)`, the absolute sum of all elements.
+norm.Lp = function(mat, p = 1) {
+  stopifnot(p >= 0 && is.numeric(p))
+  if (p == 0) {
+    sum(!!mat)
+  } else if (is.infinite(p)) {
+    max(abs(mat))
+  } else {
+    sum(abs(mat) ^ p) ^ (1 / p)
+  }
+}
+
+#' Soft-thresholding 
+#' 
+#' Perform soft-thresholding given the cut-off value.
+#' @param x any numerical `matrix` or `vector`. 
+#' @param t `numeric`, the amount to soft-threshold, i.e., \eqn{sgn(x_{ij}) (|x_{ij}-t|)_+}. 
+soft <- function (x, t) {
+  sign(x) * pmax(abs(x) - t, 0)
+}
+
+#' Hard-thresholding 
+#' 
+#' Perform hard-thresholding given the cut-off value.
+#' @param x any numerical `matrix` or `vector`. 
+#' @param t `numeric`, the amount to hard-threshold, i.e., \eqn{sgn(x_{ij}) (|x_{ij}-t|)_+}. 
+hard <- function (x, t) {
+  x * (abs(x) >= t)
+}
+
+#' Shrinkage
+#'
+#' Shrink a matrix using soft-thresholding or hard-thresholding.
+#'
+#' @param x `matrix` or `Matrix`, to be threshold.
+#' @param gamma `numeric`, the constraint of Lp norm, i.e. \eqn{\|x\|\le \gamma}. 
+#' @param shrink `character(1)`, shrinkage method, "soft" (default) or "hard". 
+#' @param epsilon `numeric`, precision tolerance. This should be greater than `.Machine$double.eps`.
+#' @details A binary search to find the cut-off value.
+#' @return a `list` with two components:
+#' \item{matrix}{matrix, the matrix that results from soft-thresholding}
+#' \item{norm}{numeric, the norm of the matrix after soft-thresholding. This value is close to constraint if using the second option.}
+shrinkage = function(x,
+                     gamma,
+                     shrink = "soft",
+                     epsilon = 1e-11) {
+  stopifnot(gamma >= 0)
+  stopifnot(shrink %in% c("soft", "hard"))
+  shrink.fun <- get(shrink)
+  p <- 1 * (shrink == "soft") 
+  
+  ## no shrinkage needed
+  if (norm.Lp(x, p) <= gamma) return(x)
+  
+  ## binary search
+  lower = 0 ## whose Lp norm > gamma
+  upper = max(abs(x)) ## cut-off where L1 norm = 0
+  while (upper - lower > epsilon) {
+    mid = (lower + upper) / 2
+    x.mid = shrink.fun(x, mid)
+    if (norm.Lp(x.mid, p) > gamma) {
+      lower = mid
+    } else
+      upper = mid
+  }
+  
+  return(x.mid)
+}
+
+
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## ------ GPower ------
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#' R interface for GPower.m 
+#' 
+#' This function interacts with MATLAB and calls the GPower.m for sparse PCA. 
+#' The input parameters of this function match that of GPower.m too. 
+#' 
+#' @param A `matrix`, input data, p rows of variables, n columns of observations.
+#' @param lambda `numeric`, tuning parameter(s).
+#' @param m `integer`, number of components.
+#' @param penalty either 'l1' or 'l0'.
+#' @param block either 0 or 1. block==0 means that deflation is used if more than one component needs to be computed. A block algorithm is otherwise used, that computes m components at once.
+#' @param mu a vector of m `numeric`, only required for the block algorithms.
+#' @param center `logical`, whether to center the columns of A.
+#' @param scale `logical`, whether to scale the columns of A.
+#' @param order `logical` or "sdev" or "pve", whether to re-order the columns of loadings by the PVE *decreasingly*.
+#' @return a list of
+#' \item{loadings}{`matrix`, sparse loadings of PCs.}
+#' \item{scores}{an n x k `matrix`, the component scores.}
+#' \item{pve}{a `numeric` vector of length `k`, cumulative proportion of variance in `A` explained by the top PCs.}
+#' \item{sdev}{a `numeric` vector of length `k`, standard deviation of each columns of scores. These may not sum to exactly 1 because of a slight loss of orthogonality.}
+#' \item{center}{`logical`, this records the `center` parameter.}
+#' \item{scale}{`logical`, this records the `scale` parameter.}
+#' \item{n.obs}{`integer`, sample size, that is, `nrow(A)`.}
+#' @references Journée, M., Nesterov, Y., Richtárik, P., & Sepulchre, R. (2010). Generalized power method for sparse principal component analysis. Journal of Machine Learning Research, 11(Feb), 517-553.
+gpower = function(A,
+                  lambda = rep(0.1, m),
+                  m = 5,
+                  penalty = "l1",
+                  block = 1,
+                  mu = 1 / seq_len(m),
+                  center = T,
+                  scale = F,
+                  order = T,
+                  paths_to_add = NULL) {
+  ## center and scale
+  A = scale(x = A, center = center, scale = scale)
+  
+  ## call GPower from Matlab
+  write.table(A, file = paste0(paths_to_add, "gpower_in.txt"), 
+              row.names = F, col.names = F)
+  cmd = c(
+    paste0("addpath('",paths_to_add,"')"),
+    paste0("p=", nrow(A)), ## number of samples;
+    paste0("n=", ncol(A)), ## number of variables
+    paste0("m=", m),
+    "A=importdata('gpower_in.txt')", ## data matrix
+    paste0("mu=[", paste(mu, collapse = ","),"]"), ## distinct mu_i
+    "%mu=ones(m,1)", ## identical mu_i,
+    paste0("lambda=[", paste(lambda, collapse = ","),"]"),
+    paste0("Z=GPower(A,lambda,m,'", penalty, "',", block, ",mu)"),
+    paste0("save('",paths_to_add,"gpower_out.txt', 'Z', '-ascii')")
+  )
+  matlabr::run_matlab_code(cmd, verbose = F, add_clear_all = T) 
+  ## read results
+  loadings = read.table(paste0(paths_to_add, "gpower_out.txt"), 
+                        header = F)
+  
+  ## compute other results
+  loadings <- as.matrix(loadings)
+  scores = A %*% loadings
+  sdev = apply(scores, 2, sd)
+  
+  ## permute PCs for decreasing sdev
+  if (order == T) 
+    ord = order(sdev, decreasing = T)
+  
+  loadings = loadings[,ord]
+  scores = scores[,ord]
+  sdev = sdev[ord]
+  pve = cpve(A, loadings)
+  
+  list(loadings = loadings,
+       scores = scores, 
+       pve = pve,
+       sdev = sdev, 
+       center = center, 
+       scale = scale,
+       n.obs = nrow(A))
+}
+
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## ------ image filters ------ 
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## re-implement whitening procedure
+
+#' ffshift
+#' 
+#' Rearrange the matrix so that zero frequency component is in the middle of the matrix. 
+#' This is similar to the `fftshift` function in MATLAB 
+#' 
+#' @param x a `matrix` of image. 
+#' @references Olshausen, Bruno A., and David J. Field. "Emergence of simple-cell receptive field properties by learning a sparse code for natural images." Nature 381.6583 (1996): 607.
+fftshift <- function(x) {
+  if (class(x) != 'matrix') {
+    stop('sorry, this class of input x is not supported yet')
+  }
+  rd2 <- floor(nrow(x)/2)
+  cd2 <- floor(ncol(x)/2)
+  
+  ## Identify the first, second, third, and fourth quadrants 
+  q1 <- x[1:rd2,1:cd2]
+  q2 <- x[1:rd2,(cd2+1):ncol(x)]
+  q3 <- x[(rd2+1):nrow(x),(cd2+1):ncol(x)]
+  q4 <- x[(rd2+1):nrow(x),1:cd2]
+  
+  ## rearrange the quadrants 
+  centered.t <- rbind(q4,q1)
+  centered.b <- rbind(q3,q2)
+  centered <- cbind(centered.b,centered.t)
+  
+  return(Re(centered))
+}
+
+#' Pre-whiten Image
+#' 
+#' Mimic/simulate the processing in retina, the lateral geniculate nucleus (LGN), and V1
+#'      (1) scale all pixels to constant variance (e.g., 1).
+#'      (2) combined low-pass/whitening filter 
+#' @param img a `matrix` of square image. 
+#' @references Olshausen, Bruno A., and David J. Field. "Emergence of simple-cell receptive field properties by learning a sparse code for natural images." Nature 381.6583 (1996): 607.
+prewhiten = function(img) {
+  N = dim(img)[1]
+  img = img / sd(img) ## scale to variance 1
+  
+  px = matlab::meshgrid((-N / 2):(N / 2 - 1), (-N / 2):(N / 2 - 1))
+  rho = sqrt(px$x^2 + px$y^2)
+  f0 = 0.4 * N
+  flt = rho * exp(-(rho / f0) ^ 4) ## frequency space
+  ff = fft(as.matrix(img))
+  img.flt = fft(ff * fftshift(flt), inverse = T) 
+  img.flt <- as.cimg(Re(img.flt))
+  img.flt = 0.1 * img.flt / sd(img.flt) ## sd = 0.1
+}
+
+#' Trim Image
+#' 
+#' Trim the fringes of image
+#' @param img a `matrix` of square image. 
+#' @param hem `integer`, the width of trimmed fringes.
+trim.fringe = function(img, hem = 6) {
+  N = dim(img)[1]
+  mat <- as.matrix(img)[(hem + 1):(N - hem), (hem + 1):(N - hem)]
+  as.cimg(mat)
+}
+
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## ------ misc ------
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#' #' Varimin Rotation
+#' varimin = function(x,
+#'                    normalize = F,
+#'                    eps = 1e-05,
+#'                    maxit = 1000L) {
+#'   nc <- ncol(x)
+#'   if (nc < 2)
+#'     return(x)
+#'   if (normalize) {
+#'     sc <- sqrt(drop(apply(x, 1L, function(x) sum(x^2))))
+#'     x <- x/sc
+#'   }
+#'   p <- nrow(x)
+#'   TT <- diag(nc)
+#'   d <- 0
+#'   for (i in seq_len(maxit)) {
+#'     z <- x %*% TT
+#'     cm2 = colMeans(z^2)
+#'     B <- t(x) %*% (z^3 - z %*% diag(cm2)) 
+#'     sB <- La.svd(TT - B)
+#'     TT <- sB$u %*% sB$vt
+#'     dpast <- d
+#'     d <- sum(sB$d)
+#'     if (d < dpast * (1 + eps))
+#'       break
+#'   }
+#'   z <- x %*% TT
+#'   if (normalize)
+#'     z <- z * sc
+#'   dimnames(z) <- dimnames(x)
+#'   list(loadings = z, rotmat = TT, iter = i)
+#' }
+#' 
+#' #' Varimax2 Criteria
+#' #'
+#' #' Calculate the absmax2 criteria.
+#' #' @export
+#' varimax2.criteria = function(mat) {
+#'   sum((apply(mat^2, 2, var) - 2 * colMeans(mat ^ 2)) ^ 2)
+#' }
+#' 
+#' #' Varimax2 Rotation
+#' #' 
+#' #' Find the orthogonal matrix (rotation) T that
+#' #' maximizes the varimax2 objective (z = x %*% T), 
+#' #' varimax2(z) = \sum_{j=1}^k \[\text{Var}(z_{\cdot j}^2) - 2\]^2 
+#' #' @inheritParams varimax
+#' varimax2 = function (x, normalize = F, eps = 1e-05, maxit = 1000L)
+#' {
+#'   nc <- ncol(x)
+#'   if (nc < 2)
+#'     return(x)
+#'   if (normalize) {
+#'     sc <- sqrt(drop(apply(x, 1L, function(x) sum(x^2))))
+#'     x <- x/sc
+#'   }
+#'   p <- nrow(x)
+#'   TT <- diag(nc)
+#'   d <- 0
+#'   for (i in seq_len(maxit)) {
+#'     z <- x %*% TT
+#'     cs2 = colSums(z^2)
+#'     cs4 = colSums(z^4)
+#'     B <- t(x) %*% (z^3 - 3 * z %*% diag(cs2) / p) %*% diag(cs4 - 3 * cs2^2 / p)
+#'     sB <- La.svd(B)
+#'     TT <- sB$u %*% sB$vt
+#'     dpast <- d
+#'     d <- sum(sB$d)
+#'     if (d < dpast * (1 + eps))
+#'       break
+#'   }
+#'   z <- x %*% TT
+#'   if (normalize)
+#'     z <- z * sc
+#'   dimnames(z) <- dimnames(x)
+#'   list(loadings = z, rotmat = TT, iter = i)
+#' }
+#' 
+#' #' Varimax2 Rotation
+#' #' 
+#' #' This function invokes [GPForth].
+#' varimax2 = function (L, Tmat = diag(ncol(L)), normalize = FALSE,
+#'                      eps = 1e-5, maxit = 1000) {
+#'   GPForth(L, Tmat = Tmat, method = "varimax2",
+#'           normalize = normalize, al = 1e3,
+#'           eps = eps, maxit = maxit)
+#' }
+#' 
+#' ## FUN: gradient of varimax2
+#' vgQ.varimax2 = function (L) {
+#'   p <- nrow(L)
+#'   cs2 = colSums(L^2)
+#'   cs4 = colSums(L^4)
+#'   Gq <- (L^3 - 3 * L %*% diag(cs2) / p) %*% diag(cs4 - 3 * cs2^2 / p)
+#'   list(Gq = -Gq, f = -varimax2.criteria(L),
+#'        Method = "varimax2")
+#' }
+#' 
+#' GPForth = function (A, Tmat = diag(ncol(A)), normalize = FALSE, al = 1,
+#'                     eps = 1e-5, maxit = 1000,
+#'                     method = "varimax", methodArgs = NULL) {
+#'   if ((!is.logical(normalize)) || normalize) {
+#'     W <- NormalizingWeight(A, normalize = normalize)
+#'     normalize <- TRUE
+#'     A <- A/W
+#'   }
+#'   if (1 >= ncol(A))
+#'     stop("rotation does not make sense for single factor models.")
+#'   alpha = al
+#'   L <- A %*% Tmat
+#'   Method <- paste("vgQ", method, sep = ".")
+#'   VgQ <- do.call(Method, append(list(L), methodArgs))
+#'   G <- crossprod(A, VgQ$Gq)
+#'   f <- VgQ$f
+#'   Table <- NULL
+#'   VgQt <- do.call(Method, append(list(L), methodArgs))
+#'   for (iter in 0:maxit) {
+#'     M <- crossprod(Tmat, G)
+#'     S <- (M + t(M))/2 ## symmetric part of M, the skew-symmetric part is skm(M) = (M-t(M))/2
+#'     Gp <- G - Tmat %*% S ## gradient of the Lagrangian
+#'     s <- sqrt(sum(diag(crossprod(Gp)))) ## Frobenius norm
+#'     Table <- rbind(Table, c(iter, f, log10(s), al))
+#'     if (s < eps || al < eps * 1e-3)
+#'       break
+#'     al <- 2 * al
+#'     for (i in 0:10) {
+#'       X <- Tmat - al * G ## dont know why the package uses Gp here
+#'       UDV <- svd(X)
+#'       Tmatt <- UDV$u %*% t(UDV$v)
+#'       L <- A %*% Tmatt
+#'       VgQt <- do.call(Method, append(list(L), methodArgs))
+#'       if (VgQt$f < (f - 0.5 * s^2 * al))
+#'         break
+#'       al <- al/2
+#'     }
+#'     Tmat <- Tmatt
+#'     f <- VgQt$f
+#'     G <- crossprod(A, VgQt$Gq)
+#'   }
+#'   convergence <- (s < eps)
+#'   if ((iter == maxit) & !convergence)
+#'     warning("convergence not obtained in GPForth. ", maxit,
+#'             " iterations used.")
+#'   if (normalize)
+#'     L <- L * W
+#'   dimnames(L) <- dimnames(A)
+#'   r <- list(loadings = L, Th = Tmat, Table = Table, method = VgQ$Method,
+#'             orthogonal = TRUE, convergence = convergence, Gq = VgQt$Gq, iter = iter)
+#'   class(r) <- "GPArotation"
+#'   r
+#' }
+#' 
+#' NormalizingWeight = function (A, normalize = FALSE)
+#' {
+#'   if ("function" == mode(normalize))
+#'     normalize <- normalize(A)
+#'   if (is.logical(normalize)) {
+#'     if (normalize)
+#'       normalize <- sqrt(rowSums(A^2))
+#'     else return(array(1, dim(A)))
+#'   }
+#'   if (is.vector(normalize)) {
+#'     if (nrow(A) != length(normalize))
+#'       stop("normalize length wrong in NormalizingWeight")
+#'     return(array(normalize, dim(A)))
+#'   }
+#'   stop("normalize argument not recognized in NormalizingWeight")
+#' }
+#' 
+#' Random.Start = function (k) {
+#'   qr.Q(qr(matrix(rnorm(k * k), k)))
+#' }

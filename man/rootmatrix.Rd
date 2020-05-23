@@ -6,6 +6,9 @@
 \usage{
 rootmatrix(x)
 }
+\arguments{
+\item{x}{a symmetric \code{matrix}.}
+}
 \description{
-Find X from the Gram matrix X^T X, i.e. sqrt(crossprod(X)).
+Find \code{X} from the Gram matrix (i.e., \code{crossprod(X)}).
 }

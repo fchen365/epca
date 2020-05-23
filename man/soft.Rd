@@ -4,28 +4,13 @@
 \alias{soft}
 \title{Soft-thresholding}
 \usage{
-soft(mat, cutoff = NULL, constraint = NULL, epsilon = 2 *
-  .Machine$double.eps)
+soft(x, t)
 }
 \arguments{
-\item{mat}{matrix or Matrix, to be soft-thresholded.}
+\item{x}{any numerical \code{matrix} or \code{vector}.}
 
-\item{cutoff}{numeric, soft-thresholding cutoff. One and only one of cutoff and constraint should/can be specified.}
-
-\item{constraint}{numeric, the overall (1,1)-norm constraint value (\eqn{\gamma}), i.e. \code{\link{norm11}}(mat) \eqn{\le \gamma} . One and only one of cutoff and constraint should/can be specified.}
-
-\item{epsilon}{numeric, precision tolerance.}
-}
-\value{
-a list that contains:
-\item{matrix}{matrix, the matrix that results from soft-thresholding}
-\item{norm}{numeric, the norm of the matrix after soft-thresholding. This value is close to constraint if using the second option.}
+\item{t}{\code{numeric}, the amount to soft-threshold, i.e., \eqn{sgn(x_{ij}) (|x_{ij}-t|)_+}.}
 }
 \description{
-Evaluate the soft-thresholding function with either
-(1) a cut-off value on elements, or
-(2) a overall constraint on the (1,1)-norm.
-}
-\details{
-For the second option (constrainted soft-thresholding), this function uses a binary search to find the cut-off value.
+Perform soft-thresholding given the cut-off value.
 }

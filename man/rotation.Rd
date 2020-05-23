@@ -2,21 +2,23 @@
 % Please edit documentation in R/utility.R
 \name{rotation}
 \alias{rotation}
-\title{Orthogonal rotation for the SMD}
+\title{Varimax Rotation}
 \usage{
-rotation(X, normalize = F, eps = 1e-06)
+rotation(x, rotate = "varimax", normalize = F, flip = T, eps = 1e-06)
 }
 \arguments{
-\item{X}{matrix or Matrix.}
+\item{x}{a \code{matrix} or \code{Matrix}.}
 
-\item{normalize}{logical, whether to (default to FALSE) first normalize rows before (and scale back afterward) the rotation.}
+\item{rotate}{\code{character(1)}, rotation method, "varimax" (default) or "absmin".}
 
-\item{eps}{pricision tolerance.}
+\item{normalize}{\code{logical}, whether to (default to \code{FALSE}) first normalize rows before (and scale back afterward) the rotation.}
+
+\item{eps}{\code{numeric} pricision tolerance.}
 }
 \value{
-the rotated matrix
+the rotated matrix of the same dimension as \code{x}.
 }
 \description{
-Perform varimax rotation on X from right.
-Flip the signs of columns so that the resulting matrix is positive skewed.
+Perform varimax rotation.
+Flip the signs of columns so that the resulting matrix is positive-skewed.
 }
