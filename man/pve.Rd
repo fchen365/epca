@@ -7,14 +7,14 @@
 pve(mat, V, is.cov = F)
 }
 \arguments{
-\item{mat}{\code{matrix} or \code{Matrix}, the original data matrix X or cov(X) = crossprod(X) / (nrow(X) - 1)}
+\item{mat}{\code{matrix} or \code{Matrix}, the original data matrix \code{X} or \code{cov(X) = crossprod(X) / (nrow(X) - 1)}}
 
 \item{V}{\code{matrix}, coefficients of linear transformation, e.g., loadings (in PCA).}
 
 \item{is.cov}{\code{logical}, whether the input matrix is a covariance matrix or a Gram matrix.}
 }
 \value{
-a \code{numeric} value between \link{0,1}, the proportion of variance in mat explained by Y.
+a \code{numeric} value between 0 and 1, the proportion of variance in mat explained by Y.
 }
 \description{
 Calculate the variance in a matrix explained by a set of linear transformation, (e.g. eigenvectors).

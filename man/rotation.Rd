@@ -4,14 +4,22 @@
 \alias{rotation}
 \title{Varimax Rotation}
 \usage{
-rotation(x, rotate = "varimax", normalize = F, flip = T, eps = 1e-06)
+rotation(
+  x,
+  rotate = c("varimax", "absmin"),
+  normalize = F,
+  flip = T,
+  eps = 1e-06
+)
 }
 \arguments{
 \item{x}{a \code{matrix} or \code{Matrix}.}
 
-\item{rotate}{\code{character(1)}, rotation method, "varimax" (default) or "absmin".}
+\item{rotate}{\code{character(1)}, rotation method. Two options are currently available: "varimax" (default) or "absmin" (see details).}
 
-\item{normalize}{\code{logical}, whether to (default to \code{FALSE}) first normalize rows before (and scale back afterward) the rotation.}
+\item{normalize}{\code{logical}, whether to rows normalization should be done before and undone afterward the rotation (see details).}
+
+\item{flip}{\code{logical}, whether to flip the signs of the columns of estimates such that all columns are positive-skewed (see details).}
 
 \item{eps}{\code{numeric} pricision tolerance.}
 }
@@ -21,4 +29,39 @@ the rotated matrix of the same dimension as \code{x}.
 \description{
 Perform varimax rotation.
 Flip the signs of columns so that the resulting matrix is positive-skewed.
+}
+\details{
+\strong{\code{rotate}}: The \code{rotate} option specifies the rotation technique to
+use. Currently, there are two build-in options—“varimax” and “absmin”.
+The “varimax” rotation maximizes the element-wise L4 norm of the rotated
+matrix. It is faster and computationally more stable. The “absmin”
+rotation minimizes the absolute sum of the rotated matrix. It is shaper
+(as it directly minimizes the L1 norm) but slower and computationally
+less stable. Alternatively, you could specify your own rotation method
+into a function and input the \code{character(1)} names of it.
+
+\strong{\code{normalize}}: The argument \code{normalize} gives an indication of if and
+how any normalization should be done before rotation, and then undone
+after rotation. If normalize is \code{FALSE} (the default) no normalization
+is done. If normalize is \code{TRUE} then Kaiser normalization is done. (So
+squared row entries of normalized A sum to 1.0. This is sometimes called
+Horst normalization.) For \code{rotate="absmin"}, if \code{normalize} is a vector
+of length equal to the number of indicators (i.e., the number of rows of
+\code{A}), then the colums are divided by \code{normalize} before rotation and
+multiplied by \code{normalize} after rotation. Also, If \code{normalize} is a
+function then it should take \code{A} as an argument and return a vector
+which is used like the vector above.
+
+\strong{\code{flip}}: The argument \code{flip} gives an indication of if and the
+columns of estimated sparse component should be flipped. Note that the
+estimated (sparse) loadings, i.e., the weights on original variables,
+are column-wise invariant to a sign flipping. This is because flipping
+of a principal direction does not influence the amount of the explained
+variance by the component. If \code{flip=TRUE}, then the columns of loadings
+will be flip accordingly, such that each column is positive-skewed. This
+means that for each column, the sum of cubic elements (i.e., \code{sum(x^3)})
+are non-negative.
+}
+\references{
+Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA."
 }

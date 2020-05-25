@@ -4,14 +4,14 @@
 \alias{shrinkage}
 \title{Shrinkage}
 \usage{
-shrinkage(x, gamma, shrink = "soft", epsilon = 1e-11)
+shrinkage(x, gamma, shrink = c("soft", "hard"), epsilon = 1e-11)
 }
 \arguments{
 \item{x}{\code{matrix} or \code{Matrix}, to be threshold.}
 
 \item{gamma}{\code{numeric}, the constraint of Lp norm, i.e. \eqn{\|x\|\le \gamma}.}
 
-\item{shrink}{\code{character(1)}, shrinkage method, "soft" (default) or "hard".}
+\item{shrink}{\code{character(1)}, shrinkage method, either "soft"- (default) or "hard"-thresholding (see details).}
 
 \item{epsilon}{\code{numeric}, precision tolerance. This should be greater than \code{.Machine$double.eps}.}
 }
@@ -25,4 +25,13 @@ Shrink a matrix using soft-thresholding or hard-thresholding.
 }
 \details{
 A binary search to find the cut-off value.
+
+\strong{\code{shrink}}: The \code{shrink} option specifies the shrinkage operator to
+use. Currently, there are two build-in options—“soft”- and
+“hard”-thresholding. The “soft”-thresholding universally reduce all
+elements and sets the small elements to zeros. The “hard”-thresholding
+only sets the small elements to zeros.
+}
+\references{
+Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA."
 }

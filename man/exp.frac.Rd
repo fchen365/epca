@@ -7,15 +7,15 @@
 \method{exp}{frac}(a, num, den)
 }
 \arguments{
+\item{a}{\code{numeric(1)}, base (could be nagetive).}
+
 \item{num}{a positive \code{integer}, numerator of the exponent.}
 
 \item{den}{a positive \code{integer}, denominator of the exponent.}
-
-\item{`numeric(1)`, }{base (could be nagetive).}
 }
 \value{
 \code{numeric}, the evaluated a^(num/den)
 }
 \description{
-Calculate fractional exponent/power, a^(num/den), where a could be negative.
+Calculate fractional exponent/power, \code{a^(num/den)}, where a could be negative.
 }

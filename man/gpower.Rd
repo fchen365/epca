@@ -35,6 +35,8 @@ gpower(
 \item{scale}{\code{logical}, whether to scale the columns of A.}
 
 \item{order}{\code{logical} or "sdev" or "pve", whether to re-order the columns of loadings by the PVE \emph{decreasingly}.}
+
+\item{paths_to_add}{\code{character(1)}, working directory of MATLAB.}
 }
 \value{
 a list of

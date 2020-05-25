@@ -20,5 +20,5 @@ The function returns the U matrix.
 This is a helper function of \code{\link[=prs]{prs()}}.
 }
 \references{
-\link{https://en.wikipedia.org/wiki/Polar_decomposition}
+Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA."
 }

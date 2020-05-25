@@ -38,7 +38,7 @@ labelCluster <- function(x, ties.method = "random") {
 #' Compute the empirical MCR, assuming that #{cluster} = #{block}, 
 #' This calculation allows a permutation on clusters.
 #' 
-#' @param clusters vector of `integer` or `factor`, estimated cluster membership.
+#' @param cluster vector of `integer` or `factor`, estimated cluster membership.
 #' @param truth a vector of the same length as `clusters`, the true cluster labels.
 #' @return `numeric`, the MCR.
 #' @export
@@ -71,7 +71,7 @@ misClustRate = function(cluster, truth) {
 #' 
 #' @param x a `matrix` or `Matrix`, which is presumed full-rank.
 #' @return a `matrix` of the unitary part of the polar decomposition.
-#' @references [https://en.wikipedia.org/wiki/Polar_decomposition]
+#' @references Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA." 
 #' @export
 polar = function(x) {
   stopifnot(nrow(x) >= ncol(x))
@@ -99,7 +99,9 @@ rootmatrix <- function(x) {
 
 #' Matrix Inner Product
 #'
-#' Calculate the custom matrix inner product, Z = <X, Y>, where Z[i,j] = FUN(X[,i], Y[,j]).
+#' Calculate the custom matrix inner product, 
+#' `Z = crossprod(X, Y)`, 
+#' where `Z[i,j] = FUN(X[,i], Y[,j]`).
 #'
 #' @param X,Y `matrix` or `Matrix`.
 #' @param FUN `function` or a `character(1)` name of base function. The function should take in two vectors as input and ouput a `numeric(1)` result.
@@ -108,7 +110,7 @@ rootmatrix <- function(x) {
 #' @export
 inner = function(X, Y, FUN = "crossprod", ...) {
   stopifnot(length(FUN) == 1) 
-  if (is.character(FUN)) FUN <- get(FUN)
+  if (is.character(FUN)) FUN <- match.fun(FUN)
   res <- apply(X, 2, function(x) {
     apply(Y, 2, function(y) FUN(x, y))
   })
@@ -118,10 +120,10 @@ inner = function(X, Y, FUN = "crossprod", ...) {
 #' Proportion of Variance Explained (PVE)
 #'
 #' Calculate the variance in a matrix explained by a set of linear transformation, (e.g. eigenvectors).
-#' @param mat `matrix` or `Matrix`, the original data matrix X or cov(X) = crossprod(X) / (nrow(X) - 1)
+#' @param mat `matrix` or `Matrix`, the original data matrix `X` or `cov(X) = crossprod(X) / (nrow(X) - 1)`
 #' @param V `matrix`, coefficients of linear transformation, e.g., loadings (in PCA).
 #' @param is.cov `logical`, whether the input matrix is a covariance matrix or a Gram matrix.
-#' @return a `numeric` value between [0,1], the proportion of variance in mat explained by Y.
+#' @return a `numeric` value between 0 and 1, the proportion of variance in mat explained by Y.
 #' @export
 pve = function(mat, V, is.cov = F) {
   if (!is.cov) {
@@ -154,7 +156,7 @@ pve = function(mat, V, is.cov = F) {
 #' @seealso [pve]
 #' @export
 cpve <- function(mat, V, is.cov = F) {
-  sdev = apply(mat %*% V, 2, sd) 
+  sdev = apply(mat %*% V, 2, stats::sd) 
   ord <- order(sdev, decreasing = T)
   pve <- rep(0, ncol(V))
   for (i in 1:ncol(V)) {
@@ -178,7 +180,7 @@ cpve <- function(mat, V, is.cov = F) {
 #' @param method distance measure, "maximum", "cosine", or "euclidean" are implemented.
 #' @return a `list` of four components:
 #' \item{dist}{`dist`, the distance matrix.}
-#' \iten{match}{`solve_LSAP`, the column matches.}
+#' \item{match}{`solve_LSAP`, the column matches.}
 #' \item{value}{`numeric` vector, the distance between pairs of columns.} 
 #' \item{method}{`character`, the distance measure used.} 
 #' \item{nrow}{`integer`, the dimention of the input matrices, i.e., `nrow(x)`.}
@@ -236,19 +238,30 @@ distance <- function(x, y, method = "euclidean") {
 #' Flip the signs of columns so that the resulting matrix is positive-skewed.
 #' 
 #' @param x a `matrix` or `Matrix`.
-#' @param rotate `character(1)`, rotation method, "varimax" (default) or "absmin".
-#' @param normalize `logical`, whether to (default to `FALSE`) first normalize rows before (and scale back afterward) the rotation.
+#' @param rotate `character(1)`, rotation method. Two options are currently available: "varimax" (default) or "absmin" (see details).
+#' @param normalize `logical`, whether to rows normalization should be done before and undone afterward the rotation (see details). 
+#' @param flip `logical`, whether to flip the signs of the columns of estimates such that all columns are positive-skewed (see details).
 #' @param eps `numeric` pricision tolerance.
+#' @includeRmd man/rotate.md details
+#' @includeRmd man/normalize.md details
+#' @includeRmd man/flip.md details
 #' @return the rotated matrix of the same dimension as `x`.
+#' @references Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA." 
+#' @export
 rotation = function(x, 
-                    rotate = "varimax",
+                    rotate = c("varimax", "absmin"),
                     normalize = F, 
                     flip = T,
                     eps = 1e-6) {
+  ## check input
   stopifnot(is.array(x)) 
-  stopifnot(rotate %in% c("varimax", "absmin"))
+  rotate <- match.arg(rotate)
   
-  rotate.fun <- get(rotate)
+  if (rotate == "varimax") {
+    rotate.fun <- varimax
+  } else {
+    rotate.fun <- absmin
+  }
   r = rotate.fun(x, normalize = normalize, eps = eps)
   y = x %*% r$rotmat
   
@@ -263,15 +276,16 @@ rotation = function(x,
 #' The varimax criteria
 #'
 #' Calculate the varimax criteria.
+#' @param mat a `matrix` or `Matrix`.
 #' @references \href{https://en.wikipedia.org/wiki/Varimax_rotation}{Varimax rotation (Wikipedia)}
 #' @export
 varimax.criteria = function(mat) {
-  sum(apply(mat^2, 2, var))
+  sum(apply(mat^2, 2, stats::var))
 }
 
 #' Varimax Rotation 
 #' 
-#' This is a re-implementation of [stat::varimax], 
+#' This is a re-implementation of [stats::varimax], 
 #' which (1) adds a parameter for the maximum number of iterations, 
 #' (2) sets the default `normalize` parameter to `FALSE`,  
 #' (3) outputs the number of iteration taken, and 
@@ -281,7 +295,7 @@ varimax.criteria = function(mat) {
 #' @return A list with three elements: 
 #' \item{rotated}{the rotated matrix.} 
 #' \item{rotmat}{the (orthogonal) rotation matrix.}
-#' \item{n.iter}
+#' \item{n.iter}{the number of iterations taken.}
 #' @seealso [stats::varimax]
 varimax = function(x,
                    normalize = F,
@@ -330,8 +344,10 @@ absmin.criteria = function(L) {
 
 #' Gradient of Absmin Criterion 
 #' 
-#' This is a helper function for [absmin].
+#' This is a helper function for [absmin] and is not to be used directly by users.
 #' @inheritParams absmin
+#' @return a list required by [GPArotation::GPForth] for the absmin rotation.
+#' @export
 vgQ.absmin = function (L) {
   list(Gq = sign(L), 
        f = absmin.criteria(L), 
@@ -341,9 +357,7 @@ vgQ.absmin = function (L) {
 #' Absmin Rotation
 #' 
 #' Given a p x k matrix `x`, 
-#' finds the orthogonal matrix (rotation) that minimizes 
-#' the [absmin.criteria],
-#' . 
+#' finds the orthogonal matrix (rotation) that minimizes the [absmin.criteria].
 #' 
 #' @param L a `matrix` or `Matrix`. 
 #' @param Tmat `matrix`, initial rotation matrix.
@@ -352,13 +366,13 @@ vgQ.absmin = function (L) {
 #' @return A list with three elements: 
 #' \item{rotated}{the rotated matrix.} 
 #' \item{rotmat}{the (orthogonal) rotation matrix.}
-#' \item{n.iter}
+#' \item{n.iter}{the number of iteration taken.}
 #' @seealso [GPArotation::GPForth]
 absmin <- function(L, 
-                  Tmat = diag(ncol(L)), 
-                  normalize = FALSE,
-                  eps = 1e-5, 
-                  maxit = 1000L) {
+                   Tmat = diag(ncol(L)), 
+                   normalize = FALSE,
+                   eps = 1e-5, 
+                   maxit = 1000L) {
   nc <- ncol(L)
   if (nc < 2) {
     warnings("Rotation of a single-column matrix is invalid.")
@@ -366,6 +380,7 @@ absmin <- function(L,
                 rotmat = matrix(1), 
                 n.iter = 1))
   }
+  
   res <- GPArotation::GPForth(L, 
                               Tmat = Tmat, 
                               method = "absmin",
@@ -382,8 +397,8 @@ absmin <- function(L,
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #' Calculate fractional exponent/power
 #'
-#' Calculate fractional exponent/power, a^(num/den), where a could be negative.
-#' @param `numeric(1)`, base (could be nagetive).
+#' Calculate fractional exponent/power, `a^(num/den)`, where a could be negative.
+#' @param a `numeric(1)`, base (could be nagetive).
 #' @param num a positive `integer`, numerator of the exponent.
 #' @param den a positive `integer`, denominator of the exponent.
 #' @return `numeric`, the evaluated a^(num/den)
@@ -441,19 +456,27 @@ hard <- function (x, t) {
 #'
 #' @param x `matrix` or `Matrix`, to be threshold.
 #' @param gamma `numeric`, the constraint of Lp norm, i.e. \eqn{\|x\|\le \gamma}. 
-#' @param shrink `character(1)`, shrinkage method, "soft" (default) or "hard". 
+#' @param shrink `character(1)`, shrinkage method, either "soft"- (default) or "hard"-thresholding (see details). 
 #' @param epsilon `numeric`, precision tolerance. This should be greater than `.Machine$double.eps`.
 #' @details A binary search to find the cut-off value.
+#' @includeRmd man/shrink.md details
 #' @return a `list` with two components:
 #' \item{matrix}{matrix, the matrix that results from soft-thresholding}
 #' \item{norm}{numeric, the norm of the matrix after soft-thresholding. This value is close to constraint if using the second option.}
+#' @references Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA." 
+#' @export
 shrinkage = function(x,
                      gamma,
-                     shrink = "soft",
+                     shrink = c("soft", "hard"),
                      epsilon = 1e-11) {
+  ## check input
   stopifnot(gamma >= 0)
-  stopifnot(shrink %in% c("soft", "hard"))
-  shrink.fun <- get(shrink)
+  shrink <- match.arg(shrink)
+  if (shrink == "soft") {
+    shrink.fun <- soft
+  } else {
+    shrink.fun <- hard
+  } 
   p <- 1 * (shrink == "soft") 
   
   ## no shrinkage needed
@@ -492,6 +515,7 @@ shrinkage = function(x,
 #' @param center `logical`, whether to center the columns of A.
 #' @param scale `logical`, whether to scale the columns of A.
 #' @param order `logical` or "sdev" or "pve", whether to re-order the columns of loadings by the PVE *decreasingly*.
+#' @param paths_to_add `character(1)`, working directory of MATLAB.
 #' @return a list of
 #' \item{loadings}{`matrix`, sparse loadings of PCs.}
 #' \item{scores}{an n x k `matrix`, the component scores.}
@@ -515,7 +539,7 @@ gpower = function(A,
   A = scale(x = A, center = center, scale = scale)
   
   ## call GPower from Matlab
-  write.table(A, file = paste0(paths_to_add, "gpower_in.txt"), 
+  utils::write.table(A, file = paste0(paths_to_add, "gpower_in.txt"), 
               row.names = F, col.names = F)
   cmd = c(
     paste0("addpath('",paths_to_add,"')"),
@@ -531,13 +555,14 @@ gpower = function(A,
   )
   matlabr::run_matlab_code(cmd, verbose = F, add_clear_all = T) 
   ## read results
-  loadings = read.table(paste0(paths_to_add, "gpower_out.txt"), 
-                        header = F)
+  loadings = utils::read.table(
+    paste0(paths_to_add, "gpower_out.txt"),
+    header = F)
   
   ## compute other results
   loadings <- as.matrix(loadings)
   scores = A %*% loadings
-  sdev = apply(scores, 2, sd)
+  sdev = apply(scores, 2, stats::sd)
   
   ## permute PCs for decreasing sdev
   if (order == T) 
@@ -599,16 +624,16 @@ fftshift <- function(x) {
 #' @references Olshausen, Bruno A., and David J. Field. "Emergence of simple-cell receptive field properties by learning a sparse code for natural images." Nature 381.6583 (1996): 607.
 prewhiten = function(img) {
   N = dim(img)[1]
-  img = img / sd(img) ## scale to variance 1
+  img = img / stats::sd(img) ## scale to variance 1
   
   px = matlab::meshgrid((-N / 2):(N / 2 - 1), (-N / 2):(N / 2 - 1))
   rho = sqrt(px$x^2 + px$y^2)
   f0 = 0.4 * N
   flt = rho * exp(-(rho / f0) ^ 4) ## frequency space
-  ff = fft(as.matrix(img))
-  img.flt = fft(ff * fftshift(flt), inverse = T) 
-  img.flt <- as.cimg(Re(img.flt))
-  img.flt = 0.1 * img.flt / sd(img.flt) ## sd = 0.1
+  ff = stats::fft(as.matrix(img))
+  img.flt = stats::fft(ff * fftshift(flt), inverse = T) 
+  img.flt <- imager::as.cimg(Re(img.flt))
+  img.flt = 0.1 * img.flt / stats::sd(img.flt) ## sd = 0.1
 }
 
 #' Trim Image
@@ -619,7 +644,7 @@ prewhiten = function(img) {
 trim.fringe = function(img, hem = 6) {
   N = dim(img)[1]
   mat <- as.matrix(img)[(hem + 1):(N - hem), (hem + 1):(N - hem)]
-  as.cimg(mat)
+  imager::as.cimg(mat)
 }
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -664,7 +689,7 @@ trim.fringe = function(img, hem = 6) {
 #' #' Calculate the absmax2 criteria.
 #' #' @export
 #' varimax2.criteria = function(mat) {
-#'   sum((apply(mat^2, 2, var) - 2 * colMeans(mat ^ 2)) ^ 2)
+#'   sum((apply(mat^2, 2, stats::var) - 2 * colMeans(mat ^ 2)) ^ 2)
 #' }
 #' 
 #' #' Varimax2 Rotation

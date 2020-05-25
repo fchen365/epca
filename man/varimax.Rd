@@ -22,10 +22,10 @@ varimax(x, normalize = F, eps = 1e-05, maxit = 1000L)
 A list with three elements:
 \item{rotated}{the rotated matrix.}
 \item{rotmat}{the (orthogonal) rotation matrix.}
-\item{n.iter}
+\item{n.iter}{the number of iterations taken.}
 }
 \description{
-This is a re-implementation of \link[stat:varimax]{stat::varimax},
+This is a re-implementation of \link[stats:varimax]{stats::varimax},
 which (1) adds a parameter for the maximum number of iterations,
 (2) sets the default \code{normalize} parameter to \code{FALSE},
 (3) outputs the number of iteration taken, and

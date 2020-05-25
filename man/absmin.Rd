@@ -24,13 +24,11 @@ absmin(L, Tmat = diag(ncol(L)), normalize = FALSE, eps = 1e-05, maxit = 1000L)
 A list with three elements:
 \item{rotated}{the rotated matrix.}
 \item{rotmat}{the (orthogonal) rotation matrix.}
-\item{n.iter}
+\item{n.iter}{the number of iteration taken.}
 }
 \description{
 Given a p x k matrix \code{x},
-finds the orthogonal matrix (rotation) that minimizes
-the \link{absmin.criteria},
-.
+finds the orthogonal matrix (rotation) that minimizes the \link{absmin.criteria}.
 }
 \seealso{
 \link[GPArotation:GPForth]{GPArotation::GPForth}

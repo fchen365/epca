@@ -6,6 +6,9 @@
 \usage{
 varimax.criteria(mat)
 }
+\arguments{
+\item{mat}{a \code{matrix} or \code{Matrix}.}
+}
 \description{
 Calculate the varimax criteria.
 }

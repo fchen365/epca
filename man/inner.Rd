@@ -17,5 +17,7 @@ inner(X, Y, FUN = "crossprod", ...)
 \code{matrix}, inner product of \code{X} and \code{Y}.
 }
 \description{
-Calculate the custom matrix inner product, Z = <X, Y>, where Z\link{i,j} = FUN(X\link{,i}, Y\link{,j}).
+Calculate the custom matrix inner product,
+\code{Z = crossprod(X, Y)},
+where \verb{Z[i,j] = FUN(X[,i], Y[,j]}).
 }

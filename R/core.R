@@ -1,20 +1,24 @@
 
-#' Polar-Rotation-Shrinkage
+#' Polar-Rotate-Shrink
 #' 
 #' This function is a helper function of [sma()]. 
 #' It performs polar docomposition, orthgonal rotation, and soft-thresholding shrinkage in order. 
 #' The three steps together enable sparse estimates of the SMA and SCA. 
 #' 
-#' @param X,Z.hat the matrix product `crossprod(X, Z.hat)` is the input.
+#' @param X,Z.hat the matrix product `A <- crossprod(X, Z.hat)` is the input. `X` and `Z.hat` are separated because the former is additionally used to compute the proportion of variance explained, in the case when `order = TRUE`.
 #' @param gamma `numeric`, the sparsity parameter.
-#' @param rotate `character(1)`, rotation method, "varimax" (default) or "absmin".
-#' @param shrink `character(1)`, shrinkage method, "soft" (default) or "hard". 
-#' @param normalize `logical`, whether to normalize rows before rotation, then scale back after.
-#' @param order `logical`, whether to re-order decreasingly the columns of estimates by PVE.
-#' @param flip `logical`, whether to flip the signs of the columns of estimates such that all columns are positive-skewed, i.e., the sums of cubic elements are positive.
+#' @param order `logical`, whether to re-order the columns of the estimates (see details).
 #' @param epsilon `numeric`, tolerance of convergence precision (dafault to 0.00001).
-#' 
-#' @return a `matrix` of the same dimension as `A`, sparse estimate.
+#' @inheritParams rotation
+#' @inheritParams shrinkage
+#' @includeRmd man/rotate.md details
+#' @includeRmd man/shrink.md details
+#' @includeRmd man/normalize.md details
+#' @includeRmd man/order.md details
+#' @includeRmd man/flip.md details
+#' @return a `matrix` of the sparse estimate, of the same dimension as `crossprod(X, Z.hat)`.
+#' @references Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA." 
+#' @export
 prs <- function(X, Z.hat,
                 gamma,
                 rotate, 
@@ -22,10 +26,10 @@ prs <- function(X, Z.hat,
                 normalize,
                 order,
                 flip,
-                epsilon = 1e-5) {
+                epsilon) {
   ## input
   A <- crossprod(X, Z.hat)
-
+  
   ## three steps  
   Y.tilde <- polar(A)
   Y.star = rotation(Y.tilde, 
@@ -37,7 +41,7 @@ prs <- function(X, Z.hat,
 
   ## re-order by std dev of scores
   if (order) {
-    sdev <- apply(X %*% Y.hat, 2, sd) 
+    sdev <- apply(X %*% Y.hat, 2, stats::sd) 
     ord <- order(sdev, decreasing = T)
     Y.hat <- Y.hat[,ord,drop=F]
   }
@@ -45,8 +49,8 @@ prs <- function(X, Z.hat,
   Y.hat
 }
 
-#' Sparse matrix approximation 
-#'
+#' Sparse Matrix Approximation 
+#' 
 #' Perform the sparse matrix approximation (SMA) of a data matrix X as three components: Z B Y', 
 #' where Z and Y are sparse, and B is low-rank but not necessarily diagonal.
 #'
@@ -58,20 +62,33 @@ prs <- function(X, Z.hat,
 #' @param max.iter `integer`, maximum number of iteration (default to 1,000). 
 #' @param quiet `logical`, whether to mute the process report (default to `TRUE`)
 #' @inheritParams prs
-#'
-#' @return a `list` of four elements:
-#' \item{Z}{an n x k `matrix` , sparse component Z of `A`'srow space.}
-#' \item{B}{a k x k `matrix`, the middle B matrix. This is like the scores of the SMA, because the objective of SMA is to maximize the Frobenius norm of B.}
-#' \item{Y}{an n x k `matrix`, sparse component Y of `A`'s column space.}
-#' \item{score}{optimal objective value.}
-#' \item{n.iter}{an `integer`, the number of iteration taken.}
-
+#' @includeRmd man/rotate.md details
+#' @includeRmd man/shrink.md details
+#' @includeRmd man/normalize.md details
+#' @includeRmd man/order.md details
+#' @includeRmd man/flip.md details
+#' 
+#' @return a `sma` object that contains:
+#' \item{Z, B, Y}{the three parts in the SMA (i.e., *ZBY'*). 
+#' Z is a sparse n x k `matrix` that contains the row components (loadings). 
+#' The row names of Z inherit the row names of `A`.
+#' B is a k x k `matrix` that contains the scores of SMA;
+#' the Frobenius norm of B equals to the total variance explained by the SMA.
+#' Y is a sparse n x k `matrix`that contains the column components (loadings).}
+#' The row names of Y inherit the column names of `A`.
+#' \item{score}{the total variance explained by the SMA. 
+#' This is the optimal objective value obtained.}
+#' \item{n.iter}{`integer`, the number of iteration taken.}
+#' 
+#' @seealso [sca]
+#' @references Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA." 
+#' 
 #' @export
 sma = function(A,
                k = min(5, dim(A)),
                gamma = NULL,
-               rotate = "varimax", 
-               shrink = "soft",
+               rotate = c("varimax", "absmin"), 
+               shrink = c("soft", "hard"),
                center = F,
                scale = F,
                normalize = F,
@@ -100,8 +117,8 @@ sma = function(A,
   A = scale(x = A, center = center, scale = scale)
   
   ## initialize
-  S = RSpectra::svds(A, k)
-  # S = irlba::irlba(A, k, tol = 1e-10) 
+  # S = RSpectra::svds(A, k)
+  S = irlba::irlba(A, k, tol = 1e-10)
   Z = S$u
   B = diag(S$d)
   Y = S$v
@@ -149,21 +166,67 @@ sma = function(A,
     if (max(diff) < epsilon) break
   }
   
-  list(Z = Z, B = B, Y = Y, score = score, n.iter = n.iter)
+  rownames(Z) <- rownames(A)
+  rownames(Y) <- colnames(A)
+  res <- list(
+    Z = Z,
+    B = B,
+    Y = Y,
+    score = score,
+    n.iter = n.iter, 
+    call = match.call()
+  )
+  class(res) <- "sma" 
+  return(res)
 }
 
+#' @method print sma
+#' @export
+print.sma <- function(x, verbose = FALSE, ...) {
+  cat("Call: ")
+  dput(x$call)
+  cat("\n\n")
+  cat("Num. non-zero Z's: ", colSums(!!x$Z), "\n")
+  cat("Num. non-zero Y's: ", colSums(!!x$Y), "\n")
+  cat("Abs. sum Z's: ", norm(x$Z, "1"), "\n")
+  cat("Abs. sum Y's: ", norm(x$Y, "1"), "\n")
+  if(verbose){
+    rn <- rownames(x$Z)
+    cn <- rownames(x$Y)
+    if(is.null(rn)) rn <- 1:nrow(x$Z)
+    if(is.null(cn)) cn <- 1:nrow(x$Y)
+    for(k in 1:ncol(x$Y)){
+      cat("\n Component ", k, ":\n")
+      u <- x$Z[,k]
+      v <- x$Y[,k]
+      cat(fill = T)
+      us <- cbind(rn[!!u], round(u[!!u], 3))
+      dimnames(us) <- list(1:sum(!!u), c("row feature", "row weight"))
+      vs <- cbind(cn[!!v], round(v[!!v], 3))
+      dimnames(vs) <- list(1:sum(!!v), c("column feature", "column weight"))
+      print(us, quote = F, sep = "\t")
+      cat(fill = T)
+      print(vs, quote = F, sep = "\t")
+    }
+  }
+}
 
-#' Sparse component analysis
-#'
-#' Perform sparse component analysis (SCA). 
-#' SCA is a method of sparse PCA where the loadings are column sparse. 
+#' Sparse Component Analysis
+#' 
+#' `sca` performs sparse principal components analysis on the given numeric data matrix.
+#' Choices of rotation techniques and shrinkage operators are available.
 #'
 #' @param gamma `numeric(1)`, sparsity parameter, default to √(pk), where n x p is the dimension of `A`.
 #' @param is.cov  `logical`, whether the `A` is a covariance matrix or Gram matrix (i.e., `crossprod(X)`). This function presumes that `A` is *not* covariance matrix.
 #' @inheritParams prs
 #' @inheritParams sma
+#' @includeRmd man/rotate.md details
+#' @includeRmd man/shrink.md details
+#' @includeRmd man/normalize.md details
+#' @includeRmd man/order.md details
+#' @includeRmd man/flip.md details
 #'
-#' @return a list of
+#' @return a `sca` object that contains:
 #' \item{loadings}{`matrix`, sparse loadings of PCs.}
 #' \item{scores}{an n x k `matrix`, the component scores.}
 #' \item{sdev}{a `numeric` vector of length `k`, standard deviation of each columns of scores. These may not sum to exactly 1 because of a slight loss of orthogonality.}
@@ -173,13 +236,15 @@ sma = function(A,
 #' \item{n.iter}{`integer`, number of iteration tabke.}
 #' \item{n.obs}{`integer`, sample size, that is, `nrow(A)`.}
 #' 
+#' @seealso [sma]
+#' @references Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA." 
 #' @export
 sca = function(A, 
                k = min(5, dim(A)), 
                gamma = NULL, 
                is.cov = F,
-               rotate = "varimax", 
-               shrink = "soft",
+               rotate = c("varimax", "absmin"), 
+               shrink = c("soft", "hard"),
                center = T, 
                scale = T, 
                normalize = F, 
@@ -226,31 +291,50 @@ sca = function(A,
   colnames(scores) <- paste0("PC", 1:k)
   
   n.iter = S$n.iter ## number of iterations
-  sdev = apply(scores, 2, sd) ## standard deviation of scores (column)
+  sdev = apply(scores, 2, stats::sd) ## standard deviation of scores (column)
   pve = cpve(A, loadings)
   
-  list(loadings = loadings, 
-       scores = scores, 
-       pve = pve, 
-       sdev = sdev, 
-       center = center, 
-       scale = scale, 
-       n.iter = n.iter, 
-       n.obs = ifelse(is.cov, NA, nrow(A)))
+  res <- list(loadings = loadings, 
+              scores = scores, 
+              pve = pve, 
+              sdev = sdev, 
+              center = center, 
+              scale = scale, 
+              n.iter = n.iter, 
+              n.obs = ifelse(is.cov, NA, nrow(A)), 
+              call = match.call())
+  
+  class(res) <- "sca"
+  return(res)
 }
 
-# ## ------ test ------
-# n = 1500
-# p = 50
-# k = 15 ## number of PCs to calculate
-# S = matrix(runif(n * k), n, k)
-# Y = shrinkage(polar(matrix(runif(p * k), p, k)), 
-#               sqrt(p * k))$matrix
-# A = tcrossprod(S, Y) + matrix(rnorm(n * p, sd = .02), n, p)
-# 
-# ## SMA
-# s.sma = sma(A, k = k, quiet = F)
-# 
-# ## SCA 
-# s.sca = sca(A, k = k, quiet = F)
+
+#' @method print sca
+#' @export
+print.sca <- function(x, verbose = FALSE, ...) {
+  cat("Call:")
+  dput(x$call)
+  cat("\n\n")
+  cat("Num. non-zero loadings':", colSums(!!x$loadings), "\n")
+  cat("Abs. sum loadings':", norm(x$loadings, "1"), "\n")
+  cat("Cumulative proportion of variance explained (CPVE): \n")
+  tab <- matrix(round(x$pve, 3), dimnames = 
+                  list(paste("First", seq_along(x$pve), "components:"), "CPVE"))
+  rownames(tab)[1] = "First component:"
+  print(tab, quote = F, sep = "\t", row.names = F)
+  if(verbose){
+    nm <- rownames(x$loadings)
+    if (is.null(nm)) nm <- 1:nrow(x$loadings)
+    for(k in 1:ncol(x$loadings)){
+      cat("\n Component ", k, ":\n")
+      v <- x$loadings[, k]
+      cat(fill = T)
+      vs <- cbind(nm[!!v], round(v[!!v], 3))
+      dimnames(vs) <- list(1:sum(!!v), c("feature", "loadings"))
+      print(vs, quote = FALSE, sep = "\t")
+    }
+  }
+}
+
+
 

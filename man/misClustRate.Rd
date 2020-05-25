@@ -7,9 +7,9 @@
 misClustRate(cluster, truth)
 }
 \arguments{
-\item{truth}{a vector of the same length as \code{clusters}, the true cluster labels.}
+\item{cluster}{vector of \code{integer} or \code{factor}, estimated cluster membership.}
 
-\item{clusters}{vector of \code{integer} or \code{factor}, estimated cluster membership.}
+\item{truth}{a vector of the same length as \code{clusters}, the true cluster labels.}
 }
 \value{
 \code{numeric}, the MCR.

@@ -6,29 +6,31 @@ Date: 2019-09-01
 Author: Fan Chen <fan.chen@wisc.edu>
 Maintainer: Fan Chen <fan.chen@wisc.edu>
 Authors@R: 
-    person(given = "Fan", 
-           family = "Chen", 
+    person(given = "Fan", family = "Chen", 
            role = c("aut", "cre"), 
            email = "fan.chen@wisc.edu",
            comment = c(ORCID = "0000-0003-4508-6023"))
 Description: 
     Exploratory Principal Component Analysis (PCA) for large-scale dataset. 
     The package features sparse PCA and sparse matrix approximation.
-URL: https:github.com/fchen365/epca
-BugReports: https:github.com/fchen365/epca/issues
+URL: https://github.com/fchen365/epca
+BugReports: https://github.com/fchen365/epca/issues
 License: GPL-3
-Depends:
-    R (>= 3.3),
+Depends: R (>= 3.3),
 Imports:
     clue,
+    irlba,
+    imager,
     matlab,
     Matrix,
     RSpectra,
     tidyverse,
     GPArotation,
 Suggests:
+    rmarkdown,
     matlabr,
-    fastRG
+    fastRG,
+    knitr
 Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr, rmarkdown
 Encoding: UTF-8

@@ -14,7 +14,7 @@ dist.matrix(x, y, method = "euclidean")
 \value{
 a \code{list} of four components:
 \item{dist}{\code{dist}, the distance matrix.}
-\iten{match}{\code{solve_LSAP}, the column matches.}
+\item{match}{\code{solve_LSAP}, the column matches.}
 \item{value}{\code{numeric} vector, the distance between pairs of columns.}
 \item{method}{\code{character}, the distance measure used.}
 \item{nrow}{\code{integer}, the dimention of the input matrices, i.e., \code{nrow(x)}.}

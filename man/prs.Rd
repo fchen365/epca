@@ -2,32 +2,81 @@
 % Please edit documentation in R/core.R
 \name{prs}
 \alias{prs}
-\title{Polar-Rotation-Shrinkage}
+\title{Polar-Rotate-Shrink}
 \usage{
-prs(X, Z.hat, gamma, rotate, shrink, normalize, order, flip, epsilon = 1e-05)
+prs(X, Z.hat, gamma, rotate, shrink, normalize, order, flip, epsilon)
 }
 \arguments{
-\item{X, Z.hat}{the matrix product \code{crossprod(X, Z.hat)} is the input.}
+\item{X, Z.hat}{the matrix product \code{A <- crossprod(X, Z.hat)} is the input. \code{X} and \code{Z.hat} are separated because the former is additionally used to compute the proportion of variance explained, in the case when \code{order = TRUE}.}
 
 \item{gamma}{\code{numeric}, the sparsity parameter.}
 
-\item{rotate}{\code{character(1)}, rotation method, "varimax" (default) or "absmin".}
+\item{rotate}{\code{character(1)}, rotation method. Two options are currently available: "varimax" (default) or "absmin" (see details).}
 
-\item{shrink}{\code{character(1)}, shrinkage method, "soft" (default) or "hard".}
+\item{shrink}{\code{character(1)}, shrinkage method, either "soft"- (default) or "hard"-thresholding (see details).}
 
-\item{normalize}{\code{logical}, whether to normalize rows before rotation, then scale back after.}
+\item{normalize}{\code{logical}, whether to rows normalization should be done before and undone afterward the rotation (see details).}
 
-\item{order}{\code{logical}, whether to re-order decreasingly the columns of estimates by PVE.}
+\item{order}{\code{logical}, whether to re-order the columns of the estimates (see details).}
 
-\item{flip}{\code{logical}, whether to flip the signs of the columns of estimates such that all columns are positive-skewed, i.e., the sums of cubic elements are positive.}
+\item{flip}{\code{logical}, whether to flip the signs of the columns of estimates such that all columns are positive-skewed (see details).}
 
 \item{epsilon}{\code{numeric}, tolerance of convergence precision (dafault to 0.00001).}
 }
 \value{
-a \code{matrix} of the same dimension as \code{A}, sparse estimate.
+a \code{matrix} of the sparse estimate, of the same dimension as \code{crossprod(X, Z.hat)}.
 }
 \description{
 This function is a helper function of \code{\link[=sma]{sma()}}.
 It performs polar docomposition, orthgonal rotation, and soft-thresholding shrinkage in order.
 The three steps together enable sparse estimates of the SMA and SCA.
+}
+\details{
+\strong{\code{rotate}}: The \code{rotate} option specifies the rotation technique to
+use. Currently, there are two build-in options—“varimax” and “absmin”.
+The “varimax” rotation maximizes the element-wise L4 norm of the rotated
+matrix. It is faster and computationally more stable. The “absmin”
+rotation minimizes the absolute sum of the rotated matrix. It is shaper
+(as it directly minimizes the L1 norm) but slower and computationally
+less stable. Alternatively, you could specify your own rotation method
+into a function and input the \code{character(1)} names of it.
+
+\strong{\code{shrink}}: The \code{shrink} option specifies the shrinkage operator to
+use. Currently, there are two build-in options—“soft”- and
+“hard”-thresholding. The “soft”-thresholding universally reduce all
+elements and sets the small elements to zeros. The “hard”-thresholding
+only sets the small elements to zeros.
+
+\strong{\code{normalize}}: The argument \code{normalize} gives an indication of if and
+how any normalization should be done before rotation, and then undone
+after rotation. If normalize is \code{FALSE} (the default) no normalization
+is done. If normalize is \code{TRUE} then Kaiser normalization is done. (So
+squared row entries of normalized A sum to 1.0. This is sometimes called
+Horst normalization.) For \code{rotate="absmin"}, if \code{normalize} is a vector
+of length equal to the number of indicators (i.e., the number of rows of
+\code{A}), then the colums are divided by \code{normalize} before rotation and
+multiplied by \code{normalize} after rotation. Also, If \code{normalize} is a
+function then it should take \code{A} as an argument and return a vector
+which is used like the vector above.
+
+\strong{\code{order}}: In PCA (and SVD), the principal components (and the
+singular vectors) are ordered. For this, we order the sparse components
+(i.e., the columns of Z or Y) by their explained variance in the data,
+which is defined as \code{sum((A \%*\% y)^2)}, where y is a column of the
+sparse component. Note: not to be confused with the cumulative
+proportion of variance explained by Y (and Z), particularly when Y (and
+Z) is may not be strictly orthogonal.
+
+\strong{\code{flip}}: The argument \code{flip} gives an indication of if and the
+columns of estimated sparse component should be flipped. Note that the
+estimated (sparse) loadings, i.e., the weights on original variables,
+are column-wise invariant to a sign flipping. This is because flipping
+of a principal direction does not influence the amount of the explained
+variance by the component. If \code{flip=TRUE}, then the columns of loadings
+will be flip accordingly, such that each column is positive-skewed. This
+means that for each column, the sum of cubic elements (i.e., \code{sum(x^3)})
+are non-negative.
+}
+\references{
+Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA."
 }

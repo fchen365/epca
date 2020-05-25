@@ -7,7 +7,7 @@
 cpve(mat, V, is.cov = F)
 }
 \arguments{
-\item{mat}{\code{matrix} or \code{Matrix}, the original data matrix X or cov(X) = crossprod(X) / (nrow(X) - 1)}
+\item{mat}{\code{matrix} or \code{Matrix}, the original data matrix \code{X} or \code{cov(X) = crossprod(X) / (nrow(X) - 1)}}
 
 \item{V}{\code{matrix}, coefficients of linear transformation, e.g., loadings (in PCA).}
 

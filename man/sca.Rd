@@ -2,15 +2,15 @@
 % Please edit documentation in R/core.R
 \name{sca}
 \alias{sca}
-\title{Sparse component analysis}
+\title{Sparse Component Analysis}
 \usage{
 sca(
   A,
   k = min(5, dim(A)),
   gamma = NULL,
   is.cov = F,
-  rotate = "varimax",
-  shrink = "soft",
+  rotate = c("varimax", "absmin"),
+  shrink = c("soft", "hard"),
   center = T,
   scale = T,
   normalize = F,
@@ -30,19 +30,19 @@ sca(
 
 \item{is.cov}{\code{logical}, whether the \code{A} is a covariance matrix or Gram matrix (i.e., \code{crossprod(X)}). This function presumes that \code{A} is \emph{not} covariance matrix.}
 
-\item{rotate}{\code{character(1)}, rotation method, "varimax" (default) or "absmin".}
+\item{rotate}{\code{character(1)}, rotation method. Two options are currently available: "varimax" (default) or "absmin" (see details).}
 
-\item{shrink}{\code{character(1)}, shrinkage method, "soft" (default) or "hard".}
+\item{shrink}{\code{character(1)}, shrinkage method, either "soft"- (default) or "hard"-thresholding (see details).}
 
 \item{center}{\code{logical}, whether to center columns of \code{A} (default to \code{TRUE}).}
 
 \item{scale}{\code{logical}, whether to scale columns of \code{A} (default to \code{TRUE}).}
 
-\item{normalize}{\code{logical}, whether to normalize rows before rotation, then scale back after.}
+\item{normalize}{\code{logical}, whether to rows normalization should be done before and undone afterward the rotation (see details).}
 
-\item{order}{\code{logical}, whether to re-order decreasingly the columns of estimates by PVE.}
+\item{order}{\code{logical}, whether to re-order the columns of the estimates (see details).}
 
-\item{flip}{\code{logical}, whether to flip the signs of the columns of estimates such that all columns are positive-skewed, i.e., the sums of cubic elements are positive.}
+\item{flip}{\code{logical}, whether to flip the signs of the columns of estimates such that all columns are positive-skewed (see details).}
 
 \item{max.iter}{\code{integer}, maximum number of iteration (default to 1,000).}
 
@@ -51,7 +51,7 @@ sca(
 \item{quiet}{\code{logical}, whether to mute the process report (default to \code{TRUE})}
 }
 \value{
-a list of
+a \code{sca} object that contains:
 \item{loadings}{\code{matrix}, sparse loadings of PCs.}
 \item{scores}{an n x k \code{matrix}, the component scores.}
 \item{sdev}{a \code{numeric} vector of length \code{k}, standard deviation of each columns of scores. These may not sum to exactly 1 because of a slight loss of orthogonality.}
@@ -62,6 +62,58 @@ a list of
 \item{n.obs}{\code{integer}, sample size, that is, \code{nrow(A)}.}
 }
 \description{
-Perform sparse component analysis (SCA).
-SCA is a method of sparse PCA where the loadings are column sparse.
+\code{sca} performs sparse principal components analysis on the given numeric data matrix.
+Choices of rotation techniques and shrinkage operators are available.
+}
+\details{
+\strong{\code{rotate}}: The \code{rotate} option specifies the rotation technique to
+use. Currently, there are two build-in options—“varimax” and “absmin”.
+The “varimax” rotation maximizes the element-wise L4 norm of the rotated
+matrix. It is faster and computationally more stable. The “absmin”
+rotation minimizes the absolute sum of the rotated matrix. It is shaper
+(as it directly minimizes the L1 norm) but slower and computationally
+less stable. Alternatively, you could specify your own rotation method
+into a function and input the \code{character(1)} names of it.
+
+\strong{\code{shrink}}: The \code{shrink} option specifies the shrinkage operator to
+use. Currently, there are two build-in options—“soft”- and
+“hard”-thresholding. The “soft”-thresholding universally reduce all
+elements and sets the small elements to zeros. The “hard”-thresholding
+only sets the small elements to zeros.
+
+\strong{\code{normalize}}: The argument \code{normalize} gives an indication of if and
+how any normalization should be done before rotation, and then undone
+after rotation. If normalize is \code{FALSE} (the default) no normalization
+is done. If normalize is \code{TRUE} then Kaiser normalization is done. (So
+squared row entries of normalized A sum to 1.0. This is sometimes called
+Horst normalization.) For \code{rotate="absmin"}, if \code{normalize} is a vector
+of length equal to the number of indicators (i.e., the number of rows of
+\code{A}), then the colums are divided by \code{normalize} before rotation and
+multiplied by \code{normalize} after rotation. Also, If \code{normalize} is a
+function then it should take \code{A} as an argument and return a vector
+which is used like the vector above.
+
+\strong{\code{order}}: In PCA (and SVD), the principal components (and the
+singular vectors) are ordered. For this, we order the sparse components
+(i.e., the columns of Z or Y) by their explained variance in the data,
+which is defined as \code{sum((A \%*\% y)^2)}, where y is a column of the
+sparse component. Note: not to be confused with the cumulative
+proportion of variance explained by Y (and Z), particularly when Y (and
+Z) is may not be strictly orthogonal.
+
+\strong{\code{flip}}: The argument \code{flip} gives an indication of if and the
+columns of estimated sparse component should be flipped. Note that the
+estimated (sparse) loadings, i.e., the weights on original variables,
+are column-wise invariant to a sign flipping. This is because flipping
+of a principal direction does not influence the amount of the explained
+variance by the component. If \code{flip=TRUE}, then the columns of loadings
+will be flip accordingly, such that each column is positive-skewed. This
+means that for each column, the sum of cubic elements (i.e., \code{sum(x^3)})
+are non-negative.
+}
+\references{
+Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA."
+}
+\seealso{
+\link{sma}
 }
