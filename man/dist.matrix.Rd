@@ -17,7 +17,7 @@ a \code{list} of four components:
 \item{match}{\code{solve_LSAP}, the column matches.}
 \item{value}{\code{numeric} vector, the distance between pairs of columns.}
 \item{method}{\code{character}, the distance measure used.}
-\item{nrow}{\code{integer}, the dimention of the input matrices, i.e., \code{nrow(x)}.}
+\item{nrow}{\code{integer}, the dimension of the input matrices, i.e., \code{nrow(x)}.}
 }
 \description{
 Compute the distance between two matrices.

@@ -10,7 +10,7 @@
 
 #' Permute columns of a block membership matrix
 #'
-#' Perform column permutation of block membership matrix for aesthetical visualization.
+#' Perform column permutation of block membership matrix for aesthetic visualization.
 #' That is, the k-th column gives k-th cluster. This is done by ranking the column sums of squares (by default).
 #'
 #' @param x a non-negative matrix, nNode x nBlock,
@@ -183,7 +183,7 @@ cpve <- function(mat, V, is.cov = F) {
 #' \item{match}{`solve_LSAP`, the column matches.}
 #' \item{value}{`numeric` vector, the distance between pairs of columns.} 
 #' \item{method}{`character`, the distance measure used.} 
-#' \item{nrow}{`integer`, the dimention of the input matrices, i.e., `nrow(x)`.}
+#' \item{nrow}{`integer`, the dimension of the input matrices, i.e., `nrow(x)`.}
 #' @seealso [clue::solve_LSAP]
 #' @export
 dist.matrix = function(x, y, method = 'euclidean') {
@@ -241,12 +241,13 @@ distance <- function(x, y, method = "euclidean") {
 #' @param rotate `character(1)`, rotation method. Two options are currently available: "varimax" (default) or "absmin" (see details).
 #' @param normalize `logical`, whether to rows normalization should be done before and undone afterward the rotation (see details). 
 #' @param flip `logical`, whether to flip the signs of the columns of estimates such that all columns are positive-skewed (see details).
-#' @param eps `numeric` pricision tolerance.
+#' @param eps `numeric` precision tolerance.
 #' @includeRmd man/rotate.md details
 #' @includeRmd man/normalize.md details
 #' @includeRmd man/flip.md details
 #' @return the rotated matrix of the same dimension as `x`.
 #' @references Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA." 
+#' @seealso [prs], [varimax]
 #' @export
 rotation = function(x, 
                     rotate = c("varimax", "absmin"),
@@ -398,7 +399,7 @@ absmin <- function(L,
 #' Calculate fractional exponent/power
 #'
 #' Calculate fractional exponent/power, `a^(num/den)`, where a could be negative.
-#' @param a `numeric(1)`, base (could be nagetive).
+#' @param a `numeric(1)`, base (could be negative).
 #' @param num a positive `integer`, numerator of the exponent.
 #' @param den a positive `integer`, denominator of the exponent.
 #' @return `numeric`, the evaluated a^(num/den)
@@ -464,6 +465,7 @@ hard <- function (x, t) {
 #' \item{matrix}{matrix, the matrix that results from soft-thresholding}
 #' \item{norm}{numeric, the norm of the matrix after soft-thresholding. This value is close to constraint if using the second option.}
 #' @references Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA." 
+#' @seealso [prs]
 #' @export
 shrinkage = function(x,
                      gamma,

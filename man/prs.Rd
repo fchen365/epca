@@ -21,14 +21,14 @@ prs(X, Z.hat, gamma, rotate, shrink, normalize, order, flip, epsilon)
 
 \item{flip}{\code{logical}, whether to flip the signs of the columns of estimates such that all columns are positive-skewed (see details).}
 
-\item{epsilon}{\code{numeric}, tolerance of convergence precision (dafault to 0.00001).}
+\item{epsilon}{\code{numeric}, tolerance of convergence precision (default to 0.00001).}
 }
 \value{
 a \code{matrix} of the sparse estimate, of the same dimension as \code{crossprod(X, Z.hat)}.
 }
 \description{
 This function is a helper function of \code{\link[=sma]{sma()}}.
-It performs polar docomposition, orthgonal rotation, and soft-thresholding shrinkage in order.
+It performs polar docomposition, orthogonal rotation, and soft-thresholding shrinkage in order.
 The three steps together enable sparse estimates of the SMA and SCA.
 }
 \details{
@@ -36,10 +36,9 @@ The three steps together enable sparse estimates of the SMA and SCA.
 use. Currently, there are two build-in options—“varimax” and “absmin”.
 The “varimax” rotation maximizes the element-wise L4 norm of the rotated
 matrix. It is faster and computationally more stable. The “absmin”
-rotation minimizes the absolute sum of the rotated matrix. It is shaper
+rotation minimizes the absolute sum of the rotated matrix. It is sharper
 (as it directly minimizes the L1 norm) but slower and computationally
-less stable. Alternatively, you could specify your own rotation method
-into a function and input the \code{character(1)} names of it.
+less stable.
 
 \strong{\code{shrink}}: The \code{shrink} option specifies the shrinkage operator to
 use. Currently, there are two build-in options—“soft”- and
@@ -54,7 +53,7 @@ is done. If normalize is \code{TRUE} then Kaiser normalization is done. (So
 squared row entries of normalized A sum to 1.0. This is sometimes called
 Horst normalization.) For \code{rotate="absmin"}, if \code{normalize} is a vector
 of length equal to the number of indicators (i.e., the number of rows of
-\code{A}), then the colums are divided by \code{normalize} before rotation and
+\code{A}), then the columns are divided by \code{normalize} before rotation and
 multiplied by \code{normalize} after rotation. Also, If \code{normalize} is a
 function then it should take \code{A} as an argument and return a vector
 which is used like the vector above.
@@ -79,4 +78,7 @@ are non-negative.
 }
 \references{
 Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA."
+}
+\seealso{
+\link{sma}, \link{sca}, \link{polar}, \link{rotation}, \link{shrinkage}
 }

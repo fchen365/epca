@@ -12,6 +12,6 @@ permColumn(x, s = 2)
 \item{s}{integer, order of non-linear}
 }
 \description{
-Perform column permutation of block membership matrix for aesthetical visualization.
+Perform column permutation of block membership matrix for aesthetic visualization.
 That is, the k-th column gives k-th cluster. This is done by ranking the column sums of squares (by default).
 }

@@ -19,10 +19,6 @@ currently features two key tools:
     analysis for simultaneously row and column dimensionality
     reductions.
 
-<!-- The SMA decomposes a data matrix $X$ into the form of $Z B Y^\top$, where $Z$ and $Y$ are sparse and orthogonal, and $B$ is low-rank. -->
-
-<!-- This is accomplished by minimizing the reconstruction error under the [Frobenius norm](http://mathworld.wolfram.com/FrobeniusNorm.html). -->
-
 ## Installation
 
 <!-- You can install the released version of epca from [CRAN](https://CRAN.R-project.org) with: -->
@@ -43,9 +39,33 @@ from [GitHub](https://github.com/) with:
 devtools::install_github("fchen365/epca")
 ```
 
-<!-- ## Example -->
+## Example
 
-<!-- This is a basic example which shows you how to solve a common problem. -->
+Here is an example with simulated data. First, simulate a rank-5 data
+matrix with some additive Gaussian noise.
+
+``` r
+n <- 300
+p <- 50
+k <- 5
+Z <- shrinkage(polar(matrix(runif(n * k), n, k)), sqrt(n * k))
+B <- diag(5) * 3
+Y <- shrinkage(polar(matrix(runif(p * k), p, k)), sqrt(p * k))
+E <- matrix(rnorm(n * p, sd = 0.01), n, p)
+X <- scale(Z %*% B %*% t(Y) + E)
+```
+
+Now, perform the sparse PCA.
+
+``` r
+sca(X, k)
+```
+
+Similarly, we can do sparse matrix decomposition.
+
+``` r
+sma(X, k)
+```
 
 ## Reference
 

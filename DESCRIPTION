@@ -1,18 +1,16 @@
 Package: epca
 Type: Package
 Title: Exploratory Principal Component Analysis
-Version: 0.0.0.9000
-Date: 2019-09-01
-Author: Fan Chen <fan.chen@wisc.edu>
-Maintainer: Fan Chen <fan.chen@wisc.edu>
+Version: 1.0.0
+Date: 2020-05-20
 Authors@R: 
     person(given = "Fan", family = "Chen", 
            role = c("aut", "cre"), 
            email = "fan.chen@wisc.edu",
            comment = c(ORCID = "0000-0003-4508-6023"))
 Description: 
-    Exploratory Principal Component Analysis (PCA) for large-scale dataset. 
-    The package features sparse PCA and sparse matrix approximation.
+    Exploratory principal component analysis for large-scale dataset. 
+    This package contains two key tools, including sparse principal component analysis and sparse matrix approximation, described in Chen and Rohe (2020).
 URL: https://github.com/fchen365/epca
 BugReports: https://github.com/fchen365/epca/issues
 License: GPL-3
@@ -29,7 +27,6 @@ Imports:
 Suggests:
     rmarkdown,
     matlabr,
-    fastRG,
     knitr
 Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr, rmarkdown

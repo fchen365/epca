@@ -7,7 +7,7 @@
 \method{exp}{frac}(a, num, den)
 }
 \arguments{
-\item{a}{\code{numeric(1)}, base (could be nagetive).}
+\item{a}{\code{numeric(1)}, base (could be negative).}
 
 \item{num}{a positive \code{integer}, numerator of the exponent.}
 

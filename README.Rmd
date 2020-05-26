@@ -9,11 +9,13 @@ header-includes:
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
+  tidy = TRUE, 
+  tidy.opts = list(comment = FALSE),
   collapse = TRUE,
   comment = "#>",
-  fig.path = "man/figures/README-",
   out.width = "100%"
 )
+library(epca)
 ```
 
 # Exploratory Principal Component Analysis
@@ -27,9 +29,6 @@ The package currently features two key tools:
 
 * `sca` for **s**parse principal **c**omponent **a**nalysis.
 * `sma` for **s**parse **m**atrix **a**pproximation, a two-way data analysis for simultaneously row and column dimensionality reductions.
-
-<!-- The SMA decomposes a data matrix $X$ into the form of $Z B Y^\top$, where $Z$ and $Y$ are sparse and orthogonal, and $B$ is low-rank. -->
-<!-- This is accomplished by minimizing the reconstruction error under the [Frobenius norm](http://mathworld.wolfram.com/FrobeniusNorm.html). -->
 
 ## Installation
 
@@ -47,9 +46,33 @@ The package currently features two key tools:
 # install.packages("devtools")
 devtools::install_github("fchen365/epca")
 ```
-<!-- ## Example -->
+## Example
 
-<!-- This is a basic example which shows you how to solve a common problem. -->
+Here is an example with simulated data. First, simulate a rank-5 data matrix with some additive Gaussian noise.
+```{r simu, eval=F}
+## simulate a rank-5 data matrix with some additive Gaussian noise 
+n <- 300
+p <- 50
+k <- 5 ## rank
+Z <- shrinkage(polar(matrix(runif(n * k), n, k)), sqrt(n * k))
+B <- diag(5) * 3
+Y <- shrinkage(polar(matrix(runif(p * k), p, k)), sqrt(p * k))
+E <- matrix(rnorm(n * p, sd = .01), n, p)
+X <- scale(Z %*% B %*% t(Y) + E)
+```
+
+Now, perform the sparse PCA.
+```{r sca, eval=F}
+## perform sparse PCA
+sca(X, k)
+```
+
+Similarly, we can do sparse matrix decomposition.
+```{r sma, eval=F}
+## perform sparse matrix approximation
+sma(X, k)
+```
+
 
 ## Reference
 

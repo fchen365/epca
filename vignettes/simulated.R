@@ -1,25 +1,10 @@
----
-title: "Introduction to `epca`"
-author: "Fan Chen (fan.chen@wisc.edu)"
-date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteEngine{knitr::knitr}
-  %\VignetteIndexEntry{Introduction to `epca`}
-  %\usepackage[UTF-8]{inputenc}
----
-
-```{r setup, include=FALSE}
+## ----setup, include=FALSE-----------------------------------------------------
 knitr::opts_chunk$set(echo = TRUE, 
                       tidy = TRUE, 
                       tidy.opts = list(comment = FALSE))
 library(epca)
-```
 
-## Example
-
-Let's simulate a rank-5 data matrix with some additive Gaussian noise.
-```{r simu}
+## ----simu---------------------------------------------------------------------
 ## simulate a rank-5 data matrix with some additive Gaussian noise 
 n <- 300
 p <- 50
@@ -29,19 +14,14 @@ B <- diag(5) * 3
 Y <- shrinkage(polar(matrix(runif(p * k), p, k)), sqrt(p))
 E <- matrix(rnorm(n * p, sd = .01), n, p)
 X <- scale(Z %*% B %*% t(Y) + E)
-```
 
-Now, perform the sparse PCA.
-```{r}
+## -----------------------------------------------------------------------------
 ## perform sparse PCA
 s.sca <- sca(X, k)
 s.sca
-```
 
-Similarly, we can do sparse matrix decomposition.
-```{r}
+## -----------------------------------------------------------------------------
 ## perform sparse matrix approximation
 s.sma <- sma(X, k)
 s.sma
-```
 

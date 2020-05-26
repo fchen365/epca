@@ -26,7 +26,7 @@ sca(
 
 \item{k}{\code{integer}, rank of approximation.}
 
-\item{gamma}{\code{numeric(1)}, sparsity parameter, default to √(pk), where n x p is the dimension of \code{A}.}
+\item{gamma}{\code{numeric(1)}, sparsity parameter, default to \code{sqrt(pk)}, where n x p is the dimension of \code{A}.}
 
 \item{is.cov}{\code{logical}, whether the \code{A} is a covariance matrix or Gram matrix (i.e., \code{crossprod(X)}). This function presumes that \code{A} is \emph{not} covariance matrix.}
 
@@ -34,9 +34,9 @@ sca(
 
 \item{shrink}{\code{character(1)}, shrinkage method, either "soft"- (default) or "hard"-thresholding (see details).}
 
-\item{center}{\code{logical}, whether to center columns of \code{A} (default to \code{TRUE}).}
+\item{center}{\code{logical}, whether to center columns of \code{A} (see \code{\link[=scale]{scale()}}).}
 
-\item{scale}{\code{logical}, whether to scale columns of \code{A} (default to \code{TRUE}).}
+\item{scale}{\code{logical}, whether to scale columns of \code{A} (see \code{\link[=scale]{scale()}}).}
 
 \item{normalize}{\code{logical}, whether to rows normalization should be done before and undone afterward the rotation (see details).}
 
@@ -46,7 +46,7 @@ sca(
 
 \item{max.iter}{\code{integer}, maximum number of iteration (default to 1,000).}
 
-\item{epsilon}{\code{numeric}, tolerance of convergence precision (dafault to 0.00001).}
+\item{epsilon}{\code{numeric}, tolerance of convergence precision (default to 0.00001).}
 
 \item{quiet}{\code{logical}, whether to mute the process report (default to \code{TRUE})}
 }
@@ -58,7 +58,7 @@ a \code{sca} object that contains:
 \item{pve}{a \code{numeric} vector of length \code{k}, cumulative proportion of variance in \code{A} explained by the top PCs.}
 \item{center}{\code{logical}, this records the \code{center} parameter.}
 \item{scale}{\code{logical}, this records the \code{scale} parameter.}
-\item{n.iter}{\code{integer}, number of iteration tabke.}
+\item{n.iter}{\code{integer}, number of iteration taken.}
 \item{n.obs}{\code{integer}, sample size, that is, \code{nrow(A)}.}
 }
 \description{
@@ -70,10 +70,9 @@ Choices of rotation techniques and shrinkage operators are available.
 use. Currently, there are two build-in options—“varimax” and “absmin”.
 The “varimax” rotation maximizes the element-wise L4 norm of the rotated
 matrix. It is faster and computationally more stable. The “absmin”
-rotation minimizes the absolute sum of the rotated matrix. It is shaper
+rotation minimizes the absolute sum of the rotated matrix. It is sharper
 (as it directly minimizes the L1 norm) but slower and computationally
-less stable. Alternatively, you could specify your own rotation method
-into a function and input the \code{character(1)} names of it.
+less stable.
 
 \strong{\code{shrink}}: The \code{shrink} option specifies the shrinkage operator to
 use. Currently, there are two build-in options—“soft”- and
@@ -88,7 +87,7 @@ is done. If normalize is \code{TRUE} then Kaiser normalization is done. (So
 squared row entries of normalized A sum to 1.0. This is sometimes called
 Horst normalization.) For \code{rotate="absmin"}, if \code{normalize} is a vector
 of length equal to the number of indicators (i.e., the number of rows of
-\code{A}), then the colums are divided by \code{normalize} before rotation and
+\code{A}), then the columns are divided by \code{normalize} before rotation and
 multiplied by \code{normalize} after rotation. Also, If \code{normalize} is a
 function then it should take \code{A} as an argument and return a vector
 which is used like the vector above.
@@ -111,9 +110,38 @@ will be flip accordingly, such that each column is positive-skewed. This
 means that for each column, the sum of cubic elements (i.e., \code{sum(x^3)})
 are non-negative.
 }
+\examples{
+## ----setup, include=FALSE-----------------------------------------------------
+knitr::opts_chunk$set(echo = TRUE, 
+                      tidy = TRUE, 
+                      tidy.opts = list(comment = FALSE))
+library(epca)
+
+## ----simu---------------------------------------------------------------------
+## simulate a rank-5 data matrix with some additive Gaussian noise 
+n <- 300
+p <- 50
+k <- 5 ## rank
+Z <- shrinkage(polar(matrix(runif(n * k), n, k)), sqrt(n))
+B <- diag(5) * 3
+Y <- shrinkage(polar(matrix(runif(p * k), p, k)), sqrt(p))
+E <- matrix(rnorm(n * p, sd = .01), n, p)
+X <- scale(Z \%*\% B \%*\% t(Y) + E)
+
+## -----------------------------------------------------------------------------
+## perform sparse PCA
+s.sca <- sca(X, k)
+s.sca
+
+## -----------------------------------------------------------------------------
+## perform sparse matrix approximation
+s.sma <- sma(X, k)
+s.sma
+
+}
 \references{
 Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA."
 }
 \seealso{
-\link{sma}
+\link{sma}, \link{prs}
 }

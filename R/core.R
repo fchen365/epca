@@ -2,13 +2,13 @@
 #' Polar-Rotate-Shrink
 #' 
 #' This function is a helper function of [sma()]. 
-#' It performs polar docomposition, orthgonal rotation, and soft-thresholding shrinkage in order. 
+#' It performs polar docomposition, orthogonal rotation, and soft-thresholding shrinkage in order. 
 #' The three steps together enable sparse estimates of the SMA and SCA. 
 #' 
 #' @param X,Z.hat the matrix product `A <- crossprod(X, Z.hat)` is the input. `X` and `Z.hat` are separated because the former is additionally used to compute the proportion of variance explained, in the case when `order = TRUE`.
 #' @param gamma `numeric`, the sparsity parameter.
 #' @param order `logical`, whether to re-order the columns of the estimates (see details).
-#' @param epsilon `numeric`, tolerance of convergence precision (dafault to 0.00001).
+#' @param epsilon `numeric`, tolerance of convergence precision (default to 0.00001).
 #' @inheritParams rotation
 #' @inheritParams shrinkage
 #' @includeRmd man/rotate.md details
@@ -18,6 +18,7 @@
 #' @includeRmd man/flip.md details
 #' @return a `matrix` of the sparse estimate, of the same dimension as `crossprod(X, Z.hat)`.
 #' @references Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA." 
+#' @seealso [sma], [sca], [polar], [rotation], [shrinkage]
 #' @export
 prs <- function(X, Z.hat,
                 gamma,
@@ -56,9 +57,9 @@ prs <- function(X, Z.hat,
 #'
 #' @param A `matrix` or `Matrix` to be analyzed. 
 #' @param k `integer`, rank of approximation.
-#' @param gamma `numeric(2)`, sparsity parameters. If `gamma` is `numeric(1)`, it is used for both left and right sparsity component (i.e, Z and Y). If absent, the two parameters are set as (default): √(nk) and √(pk) for Z and Y respoectively, where n x p is the dimension of `A`.
-#' @param center `logical`, whether to center columns of `A` (default to `TRUE`).
-#' @param scale `logical`, whether to scale columns of `A` (default to `TRUE`).
+#' @param gamma `numeric(2)`, sparsity parameters. If `gamma` is `numeric(1)`, it is used for both left and right sparsity component (i.e, Z and Y). If absent, the two parameters are set as (default): `sqrt(nk)` and `sqrt(pk)` for Z and Y respectively, where n x p is the dimension of `A`.
+#' @param center `logical`, whether to center columns of `A` (see [scale()]).
+#' @param scale `logical`, whether to scale columns of `A` (see [scale()]).
 #' @param max.iter `integer`, maximum number of iteration (default to 1,000). 
 #' @param quiet `logical`, whether to mute the process report (default to `TRUE`)
 #' @inheritParams prs
@@ -80,9 +81,9 @@ prs <- function(X, Z.hat,
 #' This is the optimal objective value obtained.}
 #' \item{n.iter}{`integer`, the number of iteration taken.}
 #' 
-#' @seealso [sca]
+#' @seealso [sca], [prs]
 #' @references Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA." 
-#' 
+#' @example vignettes/simulated.R
 #' @export
 sma = function(A,
                k = min(5, dim(A)),
@@ -216,7 +217,7 @@ print.sma <- function(x, verbose = FALSE, ...) {
 #' `sca` performs sparse principal components analysis on the given numeric data matrix.
 #' Choices of rotation techniques and shrinkage operators are available.
 #'
-#' @param gamma `numeric(1)`, sparsity parameter, default to √(pk), where n x p is the dimension of `A`.
+#' @param gamma `numeric(1)`, sparsity parameter, default to `sqrt(pk)`, where n x p is the dimension of `A`.
 #' @param is.cov  `logical`, whether the `A` is a covariance matrix or Gram matrix (i.e., `crossprod(X)`). This function presumes that `A` is *not* covariance matrix.
 #' @inheritParams prs
 #' @inheritParams sma
@@ -233,11 +234,12 @@ print.sma <- function(x, verbose = FALSE, ...) {
 #' \item{pve}{a `numeric` vector of length `k`, cumulative proportion of variance in `A` explained by the top PCs.}
 #' \item{center}{`logical`, this records the `center` parameter.}
 #' \item{scale}{`logical`, this records the `scale` parameter.}
-#' \item{n.iter}{`integer`, number of iteration tabke.}
+#' \item{n.iter}{`integer`, number of iteration taken.}
 #' \item{n.obs}{`integer`, sample size, that is, `nrow(A)`.}
 #' 
-#' @seealso [sma]
+#' @seealso [sma], [prs]
 #' @references Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA." 
+#' @example vignettes/simulated.R
 #' @export
 sca = function(A, 
                k = min(5, dim(A)), 

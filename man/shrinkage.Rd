@@ -35,3 +35,6 @@ only sets the small elements to zeros.
 \references{
 Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA."
 }
+\seealso{
+\link{prs}
+}

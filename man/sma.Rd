@@ -25,15 +25,15 @@ sma(
 
 \item{k}{\code{integer}, rank of approximation.}
 
-\item{gamma}{\code{numeric(2)}, sparsity parameters. If \code{gamma} is \code{numeric(1)}, it is used for both left and right sparsity component (i.e, Z and Y). If absent, the two parameters are set as (default): √(nk) and √(pk) for Z and Y respoectively, where n x p is the dimension of \code{A}.}
+\item{gamma}{\code{numeric(2)}, sparsity parameters. If \code{gamma} is \code{numeric(1)}, it is used for both left and right sparsity component (i.e, Z and Y). If absent, the two parameters are set as (default): \code{sqrt(nk)} and \code{sqrt(pk)} for Z and Y respectively, where n x p is the dimension of \code{A}.}
 
 \item{rotate}{\code{character(1)}, rotation method. Two options are currently available: "varimax" (default) or "absmin" (see details).}
 
 \item{shrink}{\code{character(1)}, shrinkage method, either "soft"- (default) or "hard"-thresholding (see details).}
 
-\item{center}{\code{logical}, whether to center columns of \code{A} (default to \code{TRUE}).}
+\item{center}{\code{logical}, whether to center columns of \code{A} (see \code{\link[=scale]{scale()}}).}
 
-\item{scale}{\code{logical}, whether to scale columns of \code{A} (default to \code{TRUE}).}
+\item{scale}{\code{logical}, whether to scale columns of \code{A} (see \code{\link[=scale]{scale()}}).}
 
 \item{normalize}{\code{logical}, whether to rows normalization should be done before and undone afterward the rotation (see details).}
 
@@ -43,7 +43,7 @@ sma(
 
 \item{max.iter}{\code{integer}, maximum number of iteration (default to 1,000).}
 
-\item{epsilon}{\code{numeric}, tolerance of convergence precision (dafault to 0.00001).}
+\item{epsilon}{\code{numeric}, tolerance of convergence precision (default to 0.00001).}
 
 \item{quiet}{\code{logical}, whether to mute the process report (default to \code{TRUE})}
 }
@@ -69,10 +69,9 @@ where Z and Y are sparse, and B is low-rank but not necessarily diagonal.
 use. Currently, there are two build-in options—“varimax” and “absmin”.
 The “varimax” rotation maximizes the element-wise L4 norm of the rotated
 matrix. It is faster and computationally more stable. The “absmin”
-rotation minimizes the absolute sum of the rotated matrix. It is shaper
+rotation minimizes the absolute sum of the rotated matrix. It is sharper
 (as it directly minimizes the L1 norm) but slower and computationally
-less stable. Alternatively, you could specify your own rotation method
-into a function and input the \code{character(1)} names of it.
+less stable.
 
 \strong{\code{shrink}}: The \code{shrink} option specifies the shrinkage operator to
 use. Currently, there are two build-in options—“soft”- and
@@ -87,7 +86,7 @@ is done. If normalize is \code{TRUE} then Kaiser normalization is done. (So
 squared row entries of normalized A sum to 1.0. This is sometimes called
 Horst normalization.) For \code{rotate="absmin"}, if \code{normalize} is a vector
 of length equal to the number of indicators (i.e., the number of rows of
-\code{A}), then the colums are divided by \code{normalize} before rotation and
+\code{A}), then the columns are divided by \code{normalize} before rotation and
 multiplied by \code{normalize} after rotation. Also, If \code{normalize} is a
 function then it should take \code{A} as an argument and return a vector
 which is used like the vector above.
@@ -110,9 +109,38 @@ will be flip accordingly, such that each column is positive-skewed. This
 means that for each column, the sum of cubic elements (i.e., \code{sum(x^3)})
 are non-negative.
 }
+\examples{
+## ----setup, include=FALSE-----------------------------------------------------
+knitr::opts_chunk$set(echo = TRUE, 
+                      tidy = TRUE, 
+                      tidy.opts = list(comment = FALSE))
+library(epca)
+
+## ----simu---------------------------------------------------------------------
+## simulate a rank-5 data matrix with some additive Gaussian noise 
+n <- 300
+p <- 50
+k <- 5 ## rank
+Z <- shrinkage(polar(matrix(runif(n * k), n, k)), sqrt(n))
+B <- diag(5) * 3
+Y <- shrinkage(polar(matrix(runif(p * k), p, k)), sqrt(p))
+E <- matrix(rnorm(n * p, sd = .01), n, p)
+X <- scale(Z \%*\% B \%*\% t(Y) + E)
+
+## -----------------------------------------------------------------------------
+## perform sparse PCA
+s.sca <- sca(X, k)
+s.sca
+
+## -----------------------------------------------------------------------------
+## perform sparse matrix approximation
+s.sma <- sma(X, k)
+s.sma
+
+}
 \references{
 Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA."
 }
 \seealso{
-\link{sca}
+\link{sca}, \link{prs}
 }

@@ -21,7 +21,7 @@ rotation(
 
 \item{flip}{\code{logical}, whether to flip the signs of the columns of estimates such that all columns are positive-skewed (see details).}
 
-\item{eps}{\code{numeric} pricision tolerance.}
+\item{eps}{\code{numeric} precision tolerance.}
 }
 \value{
 the rotated matrix of the same dimension as \code{x}.
@@ -35,10 +35,9 @@ Flip the signs of columns so that the resulting matrix is positive-skewed.
 use. Currently, there are two build-in options—“varimax” and “absmin”.
 The “varimax” rotation maximizes the element-wise L4 norm of the rotated
 matrix. It is faster and computationally more stable. The “absmin”
-rotation minimizes the absolute sum of the rotated matrix. It is shaper
+rotation minimizes the absolute sum of the rotated matrix. It is sharper
 (as it directly minimizes the L1 norm) but slower and computationally
-less stable. Alternatively, you could specify your own rotation method
-into a function and input the \code{character(1)} names of it.
+less stable.
 
 \strong{\code{normalize}}: The argument \code{normalize} gives an indication of if and
 how any normalization should be done before rotation, and then undone
@@ -47,7 +46,7 @@ is done. If normalize is \code{TRUE} then Kaiser normalization is done. (So
 squared row entries of normalized A sum to 1.0. This is sometimes called
 Horst normalization.) For \code{rotate="absmin"}, if \code{normalize} is a vector
 of length equal to the number of indicators (i.e., the number of rows of
-\code{A}), then the colums are divided by \code{normalize} before rotation and
+\code{A}), then the columns are divided by \code{normalize} before rotation and
 multiplied by \code{normalize} after rotation. Also, If \code{normalize} is a
 function then it should take \code{A} as an argument and return a vector
 which is used like the vector above.
@@ -64,4 +63,7 @@ are non-negative.
 }
 \references{
 Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA."
+}
+\seealso{
+\link{prs}, \link{varimax}
 }
