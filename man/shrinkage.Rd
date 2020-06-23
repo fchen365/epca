@@ -32,6 +32,11 @@ use. Currently, there are two build-in options—“soft”- and
 elements and sets the small elements to zeros. The “hard”-thresholding
 only sets the small elements to zeros.
 }
+\examples{
+x <- matrix(1:6, nrow = 3)
+shrink_x <- shrinkage(x, 1)
+
+}
 \references{
 Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA."
 }

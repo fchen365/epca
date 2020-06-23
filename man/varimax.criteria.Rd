@@ -2,15 +2,31 @@
 % Please edit documentation in R/utility.R
 \name{varimax.criteria}
 \alias{varimax.criteria}
-\title{The varimax criteria}
+\title{The varimax criterion}
 \usage{
 varimax.criteria(mat)
 }
 \arguments{
 \item{mat}{a \code{matrix} or \code{Matrix}.}
 }
+\value{
+a \code{numeric} of evaluated varimax criterion.
+}
 \description{
-Calculate the varimax criteria.
+Calculate the varimax criterion
+}
+\examples{
+## use the "swiss" data
+fa <- factanal( ~., 2, data = swiss, rotation = "none")
+lds <- loadings(fa)
+
+## compute varimax criterion:
+varimax.criteria(lds) 
+
+## compute varimax criterion (after the varimax rotation):
+rlds <- rotation(lds, rotate = "varimax")
+varimax.criteria(rlds)
+
 }
 \references{
 \href{https://en.wikipedia.org/wiki/Varimax_rotation}{Varimax rotation (Wikipedia)}

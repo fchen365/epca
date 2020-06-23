@@ -10,14 +10,14 @@ sma(
   gamma = NULL,
   rotate = c("varimax", "absmin"),
   shrink = c("soft", "hard"),
-  center = F,
-  scale = F,
-  normalize = F,
-  order = F,
-  flip = F,
+  center = FALSE,
+  scale = FALSE,
+  normalize = FALSE,
+  order = FALSE,
+  flip = FALSE,
   max.iter = 1000,
   epsilon = 1e-05,
-  quiet = T
+  quiet = TRUE
 )
 }
 \arguments{
@@ -48,7 +48,7 @@ sma(
 \item{quiet}{\code{logical}, whether to mute the process report (default to \code{TRUE})}
 }
 \value{
-a \code{sma} object that contains:
+an \code{sma} object that contains:
 \item{Z, B, Y}{the three parts in the SMA (i.e., \emph{ZBY'}).
 Z is a sparse n x k \code{matrix} that contains the row components (loadings).
 The row names of Z inherit the row names of \code{A}.
@@ -110,14 +110,7 @@ means that for each column, the sum of cubic elements (i.e., \code{sum(x^3)})
 are non-negative.
 }
 \examples{
-## ----setup, include=FALSE-----------------------------------------------------
-knitr::opts_chunk$set(echo = TRUE, 
-                      tidy = TRUE, 
-                      tidy.opts = list(comment = FALSE))
-library(epca)
-
-## ----simu---------------------------------------------------------------------
-## simulate a rank-5 data matrix with some additive Gaussian noise 
+## simulate a rank-5 data matrix with some additive Gaussian noise
 n <- 300
 p <- 50
 k <- 5 ## rank
@@ -127,12 +120,6 @@ Y <- shrinkage(polar(matrix(runif(p * k), p, k)), sqrt(p))
 E <- matrix(rnorm(n * p, sd = .01), n, p)
 X <- scale(Z \%*\% B \%*\% t(Y) + E)
 
-## -----------------------------------------------------------------------------
-## perform sparse PCA
-s.sca <- sca(X, k)
-s.sca
-
-## -----------------------------------------------------------------------------
 ## perform sparse matrix approximation
 s.sma <- sma(X, k)
 s.sma

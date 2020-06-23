@@ -10,8 +10,14 @@ vgQ.absmin(L)
 \item{L}{a \code{matrix} or \code{Matrix}.}
 }
 \value{
-a list required by \link[GPArotation:GPForth]{GPArotation::GPForth} for the absmin rotation.
+a list required by \code{GPArotation::GPForth} for the absmin rotation.
 }
 \description{
 This is a helper function for \link{absmin} and is not to be used directly by users.
+}
+\examples{
+\dontrun{
+## NOT RUN
+## NOT for users to call.
+}
 }

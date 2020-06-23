@@ -4,7 +4,7 @@
 \alias{pve}
 \title{Proportion of Variance Explained (PVE)}
 \usage{
-pve(mat, V, is.cov = F)
+pve(mat, V, is.cov = FALSE)
 }
 \arguments{
 \item{mat}{\code{matrix} or \code{Matrix}, the original data matrix \code{X} or \code{cov(X) = crossprod(X) / (nrow(X) - 1)}}
@@ -18,4 +18,11 @@ a \code{numeric} value between 0 and 1, the proportion of variance in mat explai
 }
 \description{
 Calculate the variance in a matrix explained by a set of linear transformation, (e.g. eigenvectors).
+}
+\examples{
+## use the "swiss" data
+## find two sparse PCs 
+s.sca <- sca(swiss, 2, gamma = sqrt(ncol(swiss))) 
+ld <- loadings(s.sca)
+pve(as.matrix(swiss), ld)
 }

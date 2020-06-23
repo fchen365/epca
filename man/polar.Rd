@@ -19,6 +19,11 @@ and P is a p x p positive-semidefinite Hermitian matrix.
 The function returns the U matrix.
 This is a helper function of \code{\link[=prs]{prs()}}.
 }
+\examples{
+x <- matrix(1:6, nrow = 3)
+polar_x <- polar(x)
+
+}
 \references{
 Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA."
 }

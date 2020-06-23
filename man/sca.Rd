@@ -8,17 +8,17 @@ sca(
   A,
   k = min(5, dim(A)),
   gamma = NULL,
-  is.cov = F,
+  is.cov = FALSE,
   rotate = c("varimax", "absmin"),
   shrink = c("soft", "hard"),
-  center = T,
-  scale = T,
-  normalize = F,
-  order = T,
-  flip = T,
+  center = TRUE,
+  scale = TRUE,
+  normalize = FALSE,
+  order = TRUE,
+  flip = TRUE,
   max.iter = 1000,
   epsilon = 1e-05,
-  quiet = T
+  quiet = TRUE
 )
 }
 \arguments{
@@ -51,7 +51,7 @@ sca(
 \item{quiet}{\code{logical}, whether to mute the process report (default to \code{TRUE})}
 }
 \value{
-a \code{sca} object that contains:
+an \code{sca} object that contains:
 \item{loadings}{\code{matrix}, sparse loadings of PCs.}
 \item{scores}{an n x k \code{matrix}, the component scores.}
 \item{sdev}{a \code{numeric} vector of length \code{k}, standard deviation of each columns of scores. These may not sum to exactly 1 because of a slight loss of orthogonality.}
@@ -111,14 +111,8 @@ means that for each column, the sum of cubic elements (i.e., \code{sum(x^3)})
 are non-negative.
 }
 \examples{
-## ----setup, include=FALSE-----------------------------------------------------
-knitr::opts_chunk$set(echo = TRUE, 
-                      tidy = TRUE, 
-                      tidy.opts = list(comment = FALSE))
-library(epca)
-
-## ----simu---------------------------------------------------------------------
-## simulate a rank-5 data matrix with some additive Gaussian noise 
+## ------ example 1 ------
+## simulate a low-rank data matrix with some additive Gaussian noise
 n <- 300
 p <- 50
 k <- 5 ## rank
@@ -128,15 +122,21 @@ Y <- shrinkage(polar(matrix(runif(p * k), p, k)), sqrt(p))
 E <- matrix(rnorm(n * p, sd = .01), n, p)
 X <- scale(Z \%*\% B \%*\% t(Y) + E)
 
-## -----------------------------------------------------------------------------
 ## perform sparse PCA
 s.sca <- sca(X, k)
 s.sca
 
-## -----------------------------------------------------------------------------
-## perform sparse matrix approximation
-s.sma <- sma(X, k)
-s.sma
+## ------ example 2 ------ 
+## use the `pitprops` data from the `elasticnet` package 
+data(pitprops) 
+
+## find 3 sparse PCs
+s.sca <- sca(pitprops, 3, gamma = 4.5)
+print(s.sca, verbose = TRUE)
+
+## find 6 sparse PCs
+s.sca <- sca(pitprops, 6, gamma = 6)
+print(s.sca, verbose = TRUE)
 
 }
 \references{

@@ -4,7 +4,7 @@
 \alias{cpve}
 \title{Cumulative Proportion of Variance Explained (CPVE)}
 \usage{
-cpve(mat, V, is.cov = F)
+cpve(mat, V, is.cov = FALSE)
 }
 \arguments{
 \item{mat}{\code{matrix} or \code{Matrix}, the original data matrix \code{X} or \code{cov(X) = crossprod(X) / (nrow(X) - 1)}}
@@ -18,6 +18,14 @@ a \code{numeric} vector of length \code{ncol(V)}, the i-th value is the CPVE of 
 }
 \description{
 Calculate the CPVE.
+}
+\examples{
+## use the "swiss" data
+## find two sparse PCs 
+s.sca <- sca(swiss, 2, gamma = sqrt(ncol(swiss))) 
+ld <- loadings(s.sca)
+cpve(as.matrix(swiss), ld)
+
 }
 \seealso{
 \link{pve}

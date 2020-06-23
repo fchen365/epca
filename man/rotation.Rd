@@ -7,8 +7,8 @@
 rotation(
   x,
   rotate = c("varimax", "absmin"),
-  normalize = F,
-  flip = T,
+  normalize = FALSE,
+  flip = TRUE,
   eps = 1e-06
 )
 }
@@ -60,6 +60,11 @@ variance by the component. If \code{flip=TRUE}, then the columns of loadings
 will be flip accordingly, such that each column is positive-skewed. This
 means that for each column, the sum of cubic elements (i.e., \code{sum(x^3)})
 are non-negative.
+}
+\examples{
+## use the "swiss" data
+fa <- factanal( ~., 2, data = swiss, rotation = "none")
+rotation(loadings(fa))
 }
 \references{
 Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA."

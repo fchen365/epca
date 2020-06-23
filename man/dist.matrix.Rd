@@ -22,12 +22,21 @@ a \code{list} of four components:
 \description{
 Compute the distance between two matrices.
 The distance between two matrices is defined as the sum of distances between column pairs.
-This function matches the columns of two matrices, such that the matrix distance (i.e., the sum of paired column distances) is minimized.
+This function matches the columns of two matrices, such that the matrix distance
+(i.e., the sum of paired column distances) is minimized.
 This is accomplished by solving an optimization over column permutation.
 Given two matrices, \code{x} and \code{y}, find permutation p() that minimizes
 sum_i similarity(\verb{x[,p(i)], y[,i]}),
 where the \code{similarity()} can be "euclidean" distance, 1 - "cosine", or "maximum" difference (manhattan distance).
 The solution is computed by \code{\link[clue:solve_LSAP]{clue::solve_LSAP()}}.
+}
+\examples{
+x <- diag(4) 
+y <- x + rnorm(16, sd = 0.05) # add some noise
+y = t(t(y) / sqrt(colSums(y ^ 2))) ## normalize the columns
+## euclidian distance between column pairs, with minimal matches
+dist.matrix(x, y, "euclidean") 
+
 }
 \seealso{
 \link[clue:solve_LSAP]{clue::solve_LSAP}

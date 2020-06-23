@@ -48,30 +48,27 @@ devtools::install_github("fchen365/epca")
 ```
 ## Example
 
-Here is an example with simulated data. First, simulate a rank-5 data matrix with some additive Gaussian noise.
-```{r simu, eval=F}
-## simulate a rank-5 data matrix with some additive Gaussian noise 
-n <- 300
-p <- 50
-k <- 5 ## rank
-Z <- shrinkage(polar(matrix(runif(n * k), n, k)), sqrt(n * k))
-B <- diag(5) * 3
-Y <- shrinkage(polar(matrix(runif(p * k), p, k)), sqrt(p * k))
-E <- matrix(rnorm(n * p, sd = .01), n, p)
-X <- scale(Z %*% B %*% t(Y) + E)
-```
-
-Now, perform the sparse PCA.
-```{r sca, eval=F}
+The usage of `sca` and `sma` is straightforward. For example, to find `k` sparse PCs of a data matrix `X`:
+```{r sca, eval=FALSE}
 ## perform sparse PCA
 sca(X, k)
 ```
 
-Similarly, we can do sparse matrix decomposition.
-```{r sma, eval=F}
+Similarly, we can find a rank-`k` sparse matrix decomposition by
+```{r sma, eval=FALSE}
 ## perform sparse matrix approximation
 sma(X, k)
 ```
+
+For more examples, please see the vignette: 
+```{r, eval=FALSE}
+vignette("epca")
+```
+
+
+## Getting help
+
+If you encounter a clear bug, please file an issue with a minimal reproducible example on [GitHub](https://github.com/fchen365/epca/issues). 
 
 
 ## Reference

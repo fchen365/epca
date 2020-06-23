@@ -18,3 +18,8 @@ misClustRate(cluster, truth)
 Compute the empirical MCR, assuming that #{cluster} = #{block},
 This calculation allows a permutation on clusters.
 }
+\examples{
+truth = rep(1:3, each = 30) 
+cluster = rep(3:1, times = c(25, 32, 33))
+misClustRate(cluster, truth)
+}

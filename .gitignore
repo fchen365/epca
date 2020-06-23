@@ -292,3 +292,5 @@ TSWLatexianTemp*
 
 # standalone packages
 *.sta
+doc
+Meta

@@ -31,5 +31,5 @@ Given a p x k matrix \code{x},
 finds the orthogonal matrix (rotation) that minimizes the \link{absmin.criteria}.
 }
 \seealso{
-\link[GPArotation:GPForth]{GPArotation::GPForth}
+\code{GPArotation::GPForth}
 }

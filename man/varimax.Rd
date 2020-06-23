@@ -4,7 +4,7 @@
 \alias{varimax}
 \title{Varimax Rotation}
 \usage{
-varimax(x, normalize = F, eps = 1e-05, maxit = 1000L)
+varimax(x, normalize = FALSE, eps = 1e-05, maxit = 1000L)
 }
 \arguments{
 \item{x}{A loadings matrix, with \eqn{p} rows and \eqn{k < p} columns}

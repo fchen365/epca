@@ -19,7 +19,6 @@
 #' @return a `matrix` of the sparse estimate, of the same dimension as `crossprod(X, Z.hat)`.
 #' @references Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA." 
 #' @seealso [sma], [sca], [polar], [rotation], [shrinkage]
-#' @export
 prs <- function(X, Z.hat,
                 gamma,
                 rotate, 
@@ -43,8 +42,8 @@ prs <- function(X, Z.hat,
   ## re-order by std dev of scores
   if (order) {
     sdev <- apply(X %*% Y.hat, 2, stats::sd) 
-    ord <- order(sdev, decreasing = T)
-    Y.hat <- Y.hat[,ord,drop=F]
+    ord <- order(sdev, decreasing = TRUE)
+    Y.hat <- Y.hat[,ord,drop = FALSE]
   }
 
   Y.hat
@@ -69,7 +68,7 @@ prs <- function(X, Z.hat,
 #' @includeRmd man/order.md details
 #' @includeRmd man/flip.md details
 #' 
-#' @return a `sma` object that contains:
+#' @return an `sma` object that contains:
 #' \item{Z, B, Y}{the three parts in the SMA (i.e., *ZBY'*). 
 #' Z is a sparse n x k `matrix` that contains the row components (loadings). 
 #' The row names of Z inherit the row names of `A`.
@@ -83,21 +82,35 @@ prs <- function(X, Z.hat,
 #' 
 #' @seealso [sca], [prs]
 #' @references Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA." 
-#' @example vignettes/simulated.R
+#' @examples
+#' ## simulate a rank-5 data matrix with some additive Gaussian noise
+#' n <- 300
+#' p <- 50
+#' k <- 5 ## rank
+#' Z <- shrinkage(polar(matrix(runif(n * k), n, k)), sqrt(n))
+#' B <- diag(5) * 3
+#' Y <- shrinkage(polar(matrix(runif(p * k), p, k)), sqrt(p))
+#' E <- matrix(rnorm(n * p, sd = .01), n, p)
+#' X <- scale(Z %*% B %*% t(Y) + E)
+#' 
+#' ## perform sparse matrix approximation
+#' s.sma <- sma(X, k)
+#' s.sma
+#' 
 #' @export
 sma = function(A,
                k = min(5, dim(A)),
                gamma = NULL,
                rotate = c("varimax", "absmin"), 
                shrink = c("soft", "hard"),
-               center = F,
-               scale = F,
-               normalize = F,
-               order = F,
-               flip = F,
+               center = FALSE,
+               scale = FALSE,
+               normalize = FALSE,
+               order = FALSE,
+               flip = FALSE,
                max.iter = 1e3,
                epsilon = 1e-5,
-               quiet = T) {
+               quiet = TRUE) {
   
   ## check gamma
   if (length(gamma) == 1) {
@@ -181,7 +194,13 @@ sma = function(A,
   return(res)
 }
 
+#' Print SMA
+#' 
 #' @method print sma
+#' @param x an `sma` object.
+#' @param verbose `logical(1)`, whether to print out loadings. 
+#' @param ... additional input to generic [print].
+#' @return Print an `sma` object interactively.
 #' @export
 print.sma <- function(x, verbose = FALSE, ...) {
   cat("Call: ")
@@ -200,14 +219,14 @@ print.sma <- function(x, verbose = FALSE, ...) {
       cat("\n Component ", k, ":\n")
       u <- x$Z[,k]
       v <- x$Y[,k]
-      cat(fill = T)
+      cat(fill = TRUE)
       us <- cbind(rn[!!u], round(u[!!u], 3))
       dimnames(us) <- list(1:sum(!!u), c("row feature", "row weight"))
       vs <- cbind(cn[!!v], round(v[!!v], 3))
       dimnames(vs) <- list(1:sum(!!v), c("column feature", "column weight"))
-      print(us, quote = F, sep = "\t")
-      cat(fill = T)
-      print(vs, quote = F, sep = "\t")
+      print(us, quote = FALSE, sep = "\t")
+      cat(fill = TRUE)
+      print(vs, quote = FALSE, sep = "\t")
     }
   }
 }
@@ -227,7 +246,7 @@ print.sma <- function(x, verbose = FALSE, ...) {
 #' @includeRmd man/order.md details
 #' @includeRmd man/flip.md details
 #'
-#' @return a `sca` object that contains:
+#' @return an `sca` object that contains:
 #' \item{loadings}{`matrix`, sparse loadings of PCs.}
 #' \item{scores}{an n x k `matrix`, the component scores.}
 #' \item{sdev}{a `numeric` vector of length `k`, standard deviation of each columns of scores. These may not sum to exactly 1 because of a slight loss of orthogonality.}
@@ -239,28 +258,55 @@ print.sma <- function(x, verbose = FALSE, ...) {
 #' 
 #' @seealso [sma], [prs]
 #' @references Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA." 
-#' @example vignettes/simulated.R
+#' @examples 
+#' ## ------ example 1 ------
+#' ## simulate a low-rank data matrix with some additive Gaussian noise
+#' n <- 300
+#' p <- 50
+#' k <- 5 ## rank
+#' Z <- shrinkage(polar(matrix(runif(n * k), n, k)), sqrt(n))
+#' B <- diag(5) * 3
+#' Y <- shrinkage(polar(matrix(runif(p * k), p, k)), sqrt(p))
+#' E <- matrix(rnorm(n * p, sd = .01), n, p)
+#' X <- scale(Z %*% B %*% t(Y) + E)
+#' 
+#' ## perform sparse PCA
+#' s.sca <- sca(X, k)
+#' s.sca
+#' 
+#' ## ------ example 2 ------ 
+#' ## use the `pitprops` data from the `elasticnet` package 
+#' data(pitprops) 
+#' 
+#' ## find 3 sparse PCs
+#' s.sca <- sca(pitprops, 3, gamma = 4.5)
+#' print(s.sca, verbose = TRUE)
+#' 
+#' ## find 6 sparse PCs
+#' s.sca <- sca(pitprops, 6, gamma = 6)
+#' print(s.sca, verbose = TRUE)
+#' 
 #' @export
 sca = function(A, 
                k = min(5, dim(A)), 
                gamma = NULL, 
-               is.cov = F,
+               is.cov = FALSE,
                rotate = c("varimax", "absmin"), 
                shrink = c("soft", "hard"),
-               center = T, 
-               scale = T, 
-               normalize = F, 
-               order = T,
-               flip = T,
+               center = TRUE, 
+               scale = TRUE, 
+               normalize = FALSE, 
+               order = TRUE,
+               flip = TRUE,
                max.iter = 1e3, 
                epsilon = 1e-5, 
-               quiet = T) {
+               quiet = TRUE) {
   ## check gamma
   if (!length(gamma)) 
     gamma = sqrt(ncol(A)) * sqrt(k)
   stopifnot(length(gamma) == 1) 
   if (gamma < k || gamma > k * sqrt(ncol(A))) 
-    message("Improper sparsity parameter (gamma) for Z.") 
+    message("Improper sparsity parameter (gamma).") 
   
   ## covariance or Gram matrix 
   if (is.cov) {
@@ -277,8 +323,8 @@ sca = function(A,
           gamma = gamma2, 
           rotate = rotate, 
           shrink = shrink,
-          center = F, 
-          scale = F, 
+          center = FALSE, 
+          scale = FALSE, 
           normalize = normalize,
           order = order,
           flip = flip,
@@ -311,7 +357,14 @@ sca = function(A,
 }
 
 
+#' Print SCA
+#' 
 #' @method print sca
+#' 
+#' @param x an `sca` object.
+#' @param verbose `logical(1)`, whether to print out loadings. 
+#' @param ... additional input to generic [print].
+#' @return Print an `sma` object interactively.
 #' @export
 print.sca <- function(x, verbose = FALSE, ...) {
   cat("Call:")
@@ -323,14 +376,14 @@ print.sca <- function(x, verbose = FALSE, ...) {
   tab <- matrix(round(x$pve, 3), dimnames = 
                   list(paste("First", seq_along(x$pve), "components:"), "CPVE"))
   rownames(tab)[1] = "First component:"
-  print(tab, quote = F, sep = "\t", row.names = F)
+  print(tab, quote = FALSE, sep = "\t", row.names = FALSE)
   if(verbose){
     nm <- rownames(x$loadings)
     if (is.null(nm)) nm <- 1:nrow(x$loadings)
     for(k in 1:ncol(x$loadings)){
       cat("\n Component ", k, ":\n")
       v <- x$loadings[, k]
-      cat(fill = T)
+      cat(fill = TRUE)
       vs <- cbind(nm[!!v], round(v[!!v], 3))
       dimnames(vs) <- list(1:sum(!!v), c("feature", "loadings"))
       print(vs, quote = FALSE, sep = "\t")

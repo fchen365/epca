@@ -15,7 +15,6 @@
 #'
 #' @param x a non-negative matrix, nNode x nBlock,
 #' @param s integer, order of non-linear
-#' @export
 permColumn = function(x, s = 2) {
   x[,order(colMeans(row(x) * abs(x)^s))]
 } 
@@ -41,6 +40,10 @@ labelCluster <- function(x, ties.method = "random") {
 #' @param cluster vector of `integer` or `factor`, estimated cluster membership.
 #' @param truth a vector of the same length as `clusters`, the true cluster labels.
 #' @return `numeric`, the MCR.
+#' @examples 
+#' truth = rep(1:3, each = 30) 
+#' cluster = rep(3:1, times = c(25, 32, 33))
+#' misClustRate(cluster, truth)
 #' @export
 misClustRate = function(cluster, truth) {
   ## check
@@ -53,7 +56,7 @@ misClustRate = function(cluster, truth) {
   clusterCounts <- table(cluster, truth)
   
   # maximum matches, linear solver
-  p = clue::solve_LSAP(clusterCounts, maximum = T)
+  p = clue::solve_LSAP(clusterCounts, maximum = TRUE)
   correct <- sum(clusterCounts[cbind(seq_along(p), p)])
   return(1 - correct / length(truth))
 }
@@ -72,6 +75,10 @@ misClustRate = function(cluster, truth) {
 #' @param x a `matrix` or `Matrix`, which is presumed full-rank.
 #' @return a `matrix` of the unitary part of the polar decomposition.
 #' @references Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA." 
+#' @examples 
+#' x <- matrix(1:6, nrow = 3)
+#' polar_x <- polar(x)
+#' 
 #' @export
 polar = function(x) {
   stopifnot(nrow(x) >= ncol(x))
@@ -104,9 +111,19 @@ rootmatrix <- function(x) {
 #' where `Z[i,j] = FUN(X[,i], Y[,j]`).
 #'
 #' @param X,Y `matrix` or `Matrix`.
-#' @param FUN `function` or a `character(1)` name of base function. The function should take in two vectors as input and ouput a `numeric(1)` result.
+#' @param FUN `function` or a `character(1)` name of base function. 
+#' The function should take in two vectors as input and ouput a `numeric(1)` result.
 #' @param ... additional parameters for `FUN`.
 #' @return `matrix`, inner product of `X` and `Y`.
+#' @examples 
+#' x <- matrix(1:6, 2, 3)
+#' y <- matrix(7:12, 2, 3)
+#' ## The default is equivalent to `crossprod(x, y)`
+#' inner(x, y) 
+#' ## We can compute the pair-wise Euclidean distance of columns.
+#' EuclideanDistance = function(x, y) crossprod(x, y)^2
+#' inner(x, y, EuclideanDistance)
+#' 
 #' @export
 inner = function(X, Y, FUN = "crossprod", ...) {
   stopifnot(length(FUN) == 1) 
@@ -124,8 +141,14 @@ inner = function(X, Y, FUN = "crossprod", ...) {
 #' @param V `matrix`, coefficients of linear transformation, e.g., loadings (in PCA).
 #' @param is.cov `logical`, whether the input matrix is a covariance matrix or a Gram matrix.
 #' @return a `numeric` value between 0 and 1, the proportion of variance in mat explained by Y.
+#' @examples 
+#' ## use the "swiss" data
+#' ## find two sparse PCs 
+#' s.sca <- sca(swiss, 2, gamma = sqrt(ncol(swiss))) 
+#' ld <- loadings(s.sca)
+#' pve(as.matrix(swiss), ld)
 #' @export
-pve = function(mat, V, is.cov = F) {
+pve = function(mat, V, is.cov = FALSE) {
   if (!is.cov) {
     # V <- as.matrix(V)
     XV = mat %*% V %*% solve(t(V) %*% V) %*% t(V)
@@ -154,10 +177,17 @@ pve = function(mat, V, is.cov = F) {
 #' @inheritParams pve
 #' @return a `numeric` vector of length `ncol(V)`, the i-th value is the CPVE of the first i columns in `V`.
 #' @seealso [pve]
+#' @examples 
+#' ## use the "swiss" data
+#' ## find two sparse PCs 
+#' s.sca <- sca(swiss, 2, gamma = sqrt(ncol(swiss))) 
+#' ld <- loadings(s.sca)
+#' cpve(as.matrix(swiss), ld)
+#' 
 #' @export
-cpve <- function(mat, V, is.cov = F) {
+cpve <- function(mat, V, is.cov = FALSE) {
   sdev = apply(mat %*% V, 2, stats::sd) 
-  ord <- order(sdev, decreasing = T)
+  ord <- order(sdev, decreasing = TRUE)
   pve <- rep(0, ncol(V))
   for (i in 1:ncol(V)) {
     pve[i] <- pve(mat, V[,ord[1:i]], is.cov)
@@ -169,7 +199,8 @@ cpve <- function(mat, V, is.cov = F) {
 #'
 #' Compute the distance between two matrices.
 #' The distance between two matrices is defined as the sum of distances between column pairs. 
-#' This function matches the columns of two matrices, such that the matrix distance (i.e., the sum of paired column distances) is minimized.
+#' This function matches the columns of two matrices, such that the matrix distance 
+#' (i.e., the sum of paired column distances) is minimized.
 #' This is accomplished by solving an optimization over column permutation.
 #' Given two matrices, `x` and `y`, find permutation p() that minimizes
 #'      sum_i similarity(`x[,p(i)], y[,i]`),
@@ -185,6 +216,13 @@ cpve <- function(mat, V, is.cov = F) {
 #' \item{method}{`character`, the distance measure used.} 
 #' \item{nrow}{`integer`, the dimension of the input matrices, i.e., `nrow(x)`.}
 #' @seealso [clue::solve_LSAP]
+#' @examples 
+#' x <- diag(4) 
+#' y <- x + rnorm(16, sd = 0.05) # add some noise
+#' y = t(t(y) / sqrt(colSums(y ^ 2))) ## normalize the columns
+#' ## euclidian distance between column pairs, with minimal matches
+#' dist.matrix(x, y, "euclidean") 
+#' 
 #' @export
 dist.matrix = function(x, y, method = 'euclidean') {
   ## check
@@ -211,7 +249,7 @@ dist.matrix = function(x, y, method = 'euclidean') {
   }
   
   dist = inner(x, y, FUN)
-  match = clue::solve_LSAP(dist, maximum = F)
+  match = clue::solve_LSAP(dist, maximum = FALSE)
   value = dist[cbind(seq_along(match), match)]
 
   list(dist = dist,
@@ -248,11 +286,15 @@ distance <- function(x, y, method = "euclidean") {
 #' @return the rotated matrix of the same dimension as `x`.
 #' @references Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA." 
 #' @seealso [prs], [varimax]
+#' @examples 
+#' ## use the "swiss" data
+#' fa <- factanal( ~., 2, data = swiss, rotation = "none")
+#' rotation(loadings(fa))
 #' @export
 rotation = function(x, 
                     rotate = c("varimax", "absmin"),
-                    normalize = F, 
-                    flip = T,
+                    normalize = FALSE, 
+                    flip = TRUE,
                     eps = 1e-6) {
   ## check input
   stopifnot(is.array(x)) 
@@ -274,11 +316,24 @@ rotation = function(x,
   return(y)
 }
 
-#' The varimax criteria
+#' The varimax criterion
 #'
-#' Calculate the varimax criteria.
+#' Calculate the varimax criterion
 #' @param mat a `matrix` or `Matrix`.
+#' @return a `numeric` of evaluated varimax criterion.
 #' @references \href{https://en.wikipedia.org/wiki/Varimax_rotation}{Varimax rotation (Wikipedia)}
+#' @examples 
+#' ## use the "swiss" data
+#' fa <- factanal( ~., 2, data = swiss, rotation = "none")
+#' lds <- loadings(fa)
+#' 
+#' ## compute varimax criterion:
+#' varimax.criteria(lds) 
+#' 
+#' ## compute varimax criterion (after the varimax rotation):
+#' rlds <- rotation(lds, rotate = "varimax")
+#' varimax.criteria(rlds)
+#' 
 #' @export
 varimax.criteria = function(mat) {
   sum(apply(mat^2, 2, stats::var))
@@ -299,7 +354,7 @@ varimax.criteria = function(mat) {
 #' \item{n.iter}{the number of iterations taken.}
 #' @seealso [stats::varimax]
 varimax = function(x,
-                   normalize = F,
+                   normalize = FALSE,
                    eps = 1e-05,
                    maxit = 1000L) {
   nc <- ncol(x)
@@ -347,7 +402,12 @@ absmin.criteria = function(L) {
 #' 
 #' This is a helper function for [absmin] and is not to be used directly by users.
 #' @inheritParams absmin
-#' @return a list required by [GPArotation::GPForth] for the absmin rotation.
+#' @return a list required by `GPArotation::GPForth` for the absmin rotation.
+#' @examples 
+#' \dontrun{
+#' ## NOT RUN
+#' ## NOT for users to call.
+#' }
 #' @export
 vgQ.absmin = function (L) {
   list(Gq = sign(L), 
@@ -368,7 +428,7 @@ vgQ.absmin = function (L) {
 #' \item{rotated}{the rotated matrix.} 
 #' \item{rotmat}{the (orthogonal) rotation matrix.}
 #' \item{n.iter}{the number of iteration taken.}
-#' @seealso [GPArotation::GPForth]
+#' @seealso `GPArotation::GPForth`
 absmin <- function(L, 
                    Tmat = diag(ncol(L)), 
                    normalize = FALSE,
@@ -466,6 +526,10 @@ hard <- function (x, t) {
 #' \item{norm}{numeric, the norm of the matrix after soft-thresholding. This value is close to constraint if using the second option.}
 #' @references Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA." 
 #' @seealso [prs]
+#' @examples 
+#' x <- matrix(1:6, nrow = 3)
+#' shrink_x <- shrinkage(x, 1)
+#' 
 #' @export
 shrinkage = function(x,
                      gamma,
@@ -497,91 +561,6 @@ shrinkage = function(x,
   }
   
   return(x.mid)
-}
-
-
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## ------ GPower ------
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' R interface for GPower.m 
-#' 
-#' This function interacts with MATLAB and calls the GPower.m for sparse PCA. 
-#' The input parameters of this function match that of GPower.m too. 
-#' 
-#' @param A `matrix`, input data, p rows of variables, n columns of observations.
-#' @param lambda `numeric`, tuning parameter(s).
-#' @param m `integer`, number of components.
-#' @param penalty either 'l1' or 'l0'.
-#' @param block either 0 or 1. block==0 means that deflation is used if more than one component needs to be computed. A block algorithm is otherwise used, that computes m components at once.
-#' @param mu a vector of m `numeric`, only required for the block algorithms.
-#' @param center `logical`, whether to center the columns of A.
-#' @param scale `logical`, whether to scale the columns of A.
-#' @param order `logical` or "sdev" or "pve", whether to re-order the columns of loadings by the PVE *decreasingly*.
-#' @param paths_to_add `character(1)`, working directory of MATLAB.
-#' @return a list of
-#' \item{loadings}{`matrix`, sparse loadings of PCs.}
-#' \item{scores}{an n x k `matrix`, the component scores.}
-#' \item{pve}{a `numeric` vector of length `k`, cumulative proportion of variance in `A` explained by the top PCs.}
-#' \item{sdev}{a `numeric` vector of length `k`, standard deviation of each columns of scores. These may not sum to exactly 1 because of a slight loss of orthogonality.}
-#' \item{center}{`logical`, this records the `center` parameter.}
-#' \item{scale}{`logical`, this records the `scale` parameter.}
-#' \item{n.obs}{`integer`, sample size, that is, `nrow(A)`.}
-#' @references Journée, M., Nesterov, Y., Richtárik, P., & Sepulchre, R. (2010). Generalized power method for sparse principal component analysis. Journal of Machine Learning Research, 11(Feb), 517-553.
-gpower = function(A,
-                  lambda = rep(0.1, m),
-                  m = 5,
-                  penalty = "l1",
-                  block = 1,
-                  mu = 1 / seq_len(m),
-                  center = T,
-                  scale = F,
-                  order = T,
-                  paths_to_add = NULL) {
-  ## center and scale
-  A = scale(x = A, center = center, scale = scale)
-  
-  ## call GPower from Matlab
-  utils::write.table(A, file = paste0(paths_to_add, "gpower_in.txt"), 
-              row.names = F, col.names = F)
-  cmd = c(
-    paste0("addpath('",paths_to_add,"')"),
-    paste0("p=", nrow(A)), ## number of samples;
-    paste0("n=", ncol(A)), ## number of variables
-    paste0("m=", m),
-    "A=importdata('gpower_in.txt')", ## data matrix
-    paste0("mu=[", paste(mu, collapse = ","),"]"), ## distinct mu_i
-    "%mu=ones(m,1)", ## identical mu_i,
-    paste0("lambda=[", paste(lambda, collapse = ","),"]"),
-    paste0("Z=GPower(A,lambda,m,'", penalty, "',", block, ",mu)"),
-    paste0("save('",paths_to_add,"gpower_out.txt', 'Z', '-ascii')")
-  )
-  matlabr::run_matlab_code(cmd, verbose = F, add_clear_all = T) 
-  ## read results
-  loadings = utils::read.table(
-    paste0(paths_to_add, "gpower_out.txt"),
-    header = F)
-  
-  ## compute other results
-  loadings <- as.matrix(loadings)
-  scores = A %*% loadings
-  sdev = apply(scores, 2, stats::sd)
-  
-  ## permute PCs for decreasing sdev
-  if (order == T) 
-    ord = order(sdev, decreasing = T)
-  
-  loadings = loadings[,ord]
-  scores = scores[,ord]
-  sdev = sdev[ord]
-  pve = cpve(A, loadings)
-  
-  list(loadings = loadings,
-       scores = scores, 
-       pve = pve,
-       sdev = sdev, 
-       center = center, 
-       scale = scale,
-       n.obs = nrow(A))
 }
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -633,7 +612,7 @@ prewhiten = function(img) {
   f0 = 0.4 * N
   flt = rho * exp(-(rho / f0) ^ 4) ## frequency space
   ff = stats::fft(as.matrix(img))
-  img.flt = stats::fft(ff * fftshift(flt), inverse = T) 
+  img.flt = stats::fft(ff * fftshift(flt), inverse = TRUE) 
   img.flt <- imager::as.cimg(Re(img.flt))
   img.flt = 0.1 * img.flt / stats::sd(img.flt) ## sd = 0.1
 }
@@ -655,7 +634,7 @@ trim.fringe = function(img, hem = 6) {
 
 #' #' Varimin Rotation
 #' varimin = function(x,
-#'                    normalize = F,
+#'                    normalize = FALSE,
 #'                    eps = 1e-05,
 #'                    maxit = 1000L) {
 #'   nc <- ncol(x)
@@ -700,7 +679,7 @@ trim.fringe = function(img, hem = 6) {
 #' #' maximizes the varimax2 objective (z = x %*% T), 
 #' #' varimax2(z) = \sum_{j=1}^k \[\text{Var}(z_{\cdot j}^2) - 2\]^2 
 #' #' @inheritParams varimax
-#' varimax2 = function (x, normalize = F, eps = 1e-05, maxit = 1000L)
+#' varimax2 = function (x, normalize = FALSE, eps = 1e-05, maxit = 1000L)
 #' {
 #'   nc <- ncol(x)
 #'   if (nc < 2)

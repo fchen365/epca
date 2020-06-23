@@ -9,12 +9,11 @@ Authors@R:
            email = "fan.chen@wisc.edu",
            comment = c(ORCID = "0000-0003-4508-6023"))
 Description: 
-    Exploratory principal component analysis for large-scale dataset. 
-    This package contains two key tools, including sparse principal component analysis and sparse matrix approximation, described in Chen and Rohe (2020).
+    Exploratory principal component analysis for large-scale dataset, including sparse principal component analysis and sparse matrix approximation.
 URL: https://github.com/fchen365/epca
 BugReports: https://github.com/fchen365/epca/issues
 License: GPL-3
-Depends: R (>= 3.3),
+Depends: R (>= 3.5),
 Imports:
     clue,
     irlba,
@@ -25,9 +24,13 @@ Imports:
     tidyverse,
     GPArotation,
 Suggests:
+    elasticnet, 
+    ggcorrplot,
     rmarkdown,
+    reshape2,
     matlabr,
-    knitr
+    knitr, 
+    PMA,
 Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr, rmarkdown
 Encoding: UTF-8
