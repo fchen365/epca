@@ -2,7 +2,7 @@ Package: epca
 Type: Package
 Title: Exploratory Principal Component Analysis
 Version: 1.0.0
-Date: 2020-05-20
+Date: 2020-06-20
 Authors@R: 
     person(given = "Fan", family = "Chen", 
            role = c("aut", "cre"), 
@@ -27,6 +27,7 @@ Suggests:
     elasticnet, 
     ggcorrplot,
     rmarkdown,
+    markdown,
     reshape2,
     matlabr,
     knitr, 
