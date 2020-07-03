@@ -7,7 +7,7 @@
 
 <!-- badges: start -->
 
-[![lifecycle](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
+[![lifecycle](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing)
 <!-- badges: end -->
 
 `epca` is an R package for comprehending any data matrix that contains
@@ -21,18 +21,14 @@ currently features two key tools:
 
 ## Installation
 
-<!-- You can install the released version of epca from [CRAN](https://CRAN.R-project.org) with: -->
+You can install the released version of epca from
+[CRAN](https://CRAN.R-project.org) with:
 
-<!-- ``` r -->
+``` r
+install.packages("epca")
+```
 
-<!-- install.packages("epca") -->
-
-<!-- ``` -->
-
-<!-- or the development version from [GitHub](https://github.com/) with: -->
-
-`epca` is not yet on CRAN. You could install the development version
-from [GitHub](https://github.com/) with:
+or the development version from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
@@ -69,3 +65,4 @@ reproducible example on
 ## Reference
 
 Chen F and Rohe K, “A New Basis for Sparse PCA.”
+([arXiv](https://arxiv.org/abs/2007.00596))
