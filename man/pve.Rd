@@ -21,8 +21,8 @@ Calculate the variance in a matrix explained by a set of linear transformation, 
 }
 \examples{
 ## use the "swiss" data
-## find two sparse PCs 
-s.sca <- sca(swiss, 2, gamma = sqrt(ncol(swiss))) 
+## find two sparse PCs
+s.sca <- sca(swiss, 2, gamma = sqrt(ncol(swiss)))
 ld <- loadings(s.sca)
 pve(as.matrix(swiss), ld)
 }

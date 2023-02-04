@@ -1,7 +1,7 @@
 ---
 title: "Explore multivariate data with `epca`"
 author: "Fan Chen (fan.chen@wisc.edu)"
-date: "2020-06-22"
+date: "2023-02-04"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteEngine{knitr::knitr}
@@ -41,15 +41,15 @@ s.sca
 ## Call:sca(A = X, k = 5)
 ## 
 ## 
-## Num. non-zero loadings': 20 21 33 29 19 
-## Abs. sum loadings': 3.480141 
+## Num. non-zero loadings': 20 22 25 28 24 
+## Abs. sum loadings': 3.381739 
 ## Cumulative proportion of variance explained (CPVE): 
 ##                      CPVE
-## First component:    0.097
-## First 2 components: 0.188
-## First 3 components: 0.281
-## First 4 components: 0.356
-## First 5 components: 0.384
+## First component:    0.102
+## First 2 components: 0.201
+## First 3 components: 0.292
+## First 4 components: 0.377
+## First 5 components: 0.407
 ```
 
 Similarly, we can do sparse matrix decomposition.
@@ -63,10 +63,10 @@ s.sma
 ## Call: sma(A = X, k = 5)
 ## 
 ## 
-## Num. non-zero Z's:  164 178 170 202 217 
-## Num. non-zero Y's:  22 21 33 27 21 
-## Abs. sum Z's:  8.681909 
-## Abs. sum Y's:  3.481118
+## Num. non-zero Z's:  146 181 176 188 217 
+## Num. non-zero Y's:  19 22 24 27 26 
+## Abs. sum Z's:  9.037399 
+## Abs. sum Y's:  3.323996
 ```
 
 ## Example 2: `pitprops` data 
@@ -208,8 +208,10 @@ Fe used the single-cell RNA-seq data with the `scRNAseq` package. We removed the
 ```r
 dat <- BaronPancreasData("human")
 gene.select <- !!apply(counts(dat), 1, sd)
-label.select <- colData(dat) %>% data.frame() %>% dplyr::count(label) %>% filter(n > 
-    100)
+label.select <- colData(dat) %>%
+    data.frame() %>%
+    dplyr::count(label) %>%
+    filter(n > 100)
 dat1 <- dat[gene.select, colData(dat)$label %in% label.select$label]
 ```
 
@@ -249,11 +251,13 @@ Each gene PC uses a handful of original genes.
 We can plot the component scores of the nine PCs, with `dplyr` and `ggplot2` packages. Each panel displays one of nine cell types with the names of cell types and the number of cells reported on the top strips. For each cell type, a box depicts the component scores for nine sparse gene PCs.
 
 ```r
-scar$scores %>% reshape2::melt(varnames = c("cell", "PC"), value.name = "scores") %>% 
-    mutate(PC = factor(PC), label = label[cell]) %>% ggplot(aes(PC, scores/1000, 
-    fill = PC)) + geom_boxplot(color = "grey30", outlier.shape = NA, show.legend = FALSE) + 
-    labs(x = "gene PC", y = bquote("scores (" ~ 10^3 ~ ")")) + scale_x_discrete(labels = 1:9) + 
-    facet_wrap(~label, nrow = 3) + scale_fill_brewer(palette = "Set3") + theme_classic()
+scar$scores %>%
+    reshape2::melt(varnames = c("cell", "PC"), value.name = "scores") %>%
+    mutate(PC = factor(PC), label = label[cell]) %>%
+    ggplot(aes(PC, scores/1000, fill = PC)) + geom_boxplot(color = "grey30", outlier.shape = NA,
+    show.legend = FALSE) + labs(x = "gene PC", y = bquote("scores (" ~ 10^3 ~ ")")) +
+    scale_x_discrete(labels = 1:9) + facet_wrap(~label, nrow = 3) + scale_fill_brewer(palette = "Set3") +
+    theme_classic()
 ```
 
 ![Scores of sparse gene principal components (PCs) stratified by cell types.](figure/plot-1.png)

@@ -7,9 +7,7 @@
 distance(x, y, method = "euclidean")
 }
 \arguments{
-\item{x}{\code{matrix} or \code{Matrix}, of the same number of rows. The columns of \code{x} and \code{y} will be scaled to unit length.}
-
-\item{y}{\code{matrix} or \code{Matrix}, of the same number of rows. The columns of \code{x} and \code{y} will be scaled to unit length.}
+\item{x, y}{\code{matrix} or \code{Matrix}, of the same number of rows. The columns of \code{x} and \code{y} will be scaled to unit length.}
 
 \item{method}{distance measure, "maximum", "cosine", or "euclidean" are implemented.}
 }

@@ -31,11 +31,11 @@ where the \code{similarity()} can be "euclidean" distance, 1 - "cosine", or "max
 The solution is computed by \code{\link[clue:solve_LSAP]{clue::solve_LSAP()}}.
 }
 \examples{
-x <- diag(4) 
+x <- diag(4)
 y <- x + rnorm(16, sd = 0.05) # add some noise
 y = t(t(y) / sqrt(colSums(y ^ 2))) ## normalize the columns
 ## euclidian distance between column pairs, with minimal matches
-dist.matrix(x, y, "euclidean") 
+dist.matrix(x, y, "euclidean")
 
 }
 \seealso{

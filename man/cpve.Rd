@@ -21,8 +21,8 @@ Calculate the CPVE.
 }
 \examples{
 ## use the "swiss" data
-## find two sparse PCs 
-s.sca <- sca(swiss, 2, gamma = sqrt(ncol(swiss))) 
+## find two sparse PCs
+s.sca <- sca(swiss, 2, gamma = sqrt(ncol(swiss)))
 ld <- loadings(s.sca)
 cpve(as.matrix(swiss), ld)
 

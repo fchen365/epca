@@ -21,7 +21,7 @@ fa <- factanal( ~., 2, data = swiss, rotation = "none")
 lds <- loadings(fa)
 
 ## compute varimax criterion:
-varimax.criteria(lds) 
+varimax.criteria(lds)
 
 ## compute varimax criterion (after the varimax rotation):
 rlds <- rotation(lds, rotate = "varimax")

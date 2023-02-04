@@ -1,8 +1,8 @@
 Package: epca
 Type: Package
 Title: Exploratory Principal Component Analysis
-Version: 1.0.0
-Date: 2020-06-20
+Version: 1.0.1
+Date: 2023-02-03
 Authors@R: 
     person(given = "Fan", family = "Chen", 
            role = c("aut", "cre"), 
@@ -17,22 +17,22 @@ Depends: R (>= 3.5),
 Imports:
     clue,
     irlba,
-    imager,
-    matlab,
     Matrix,
     RSpectra,
     tidyverse,
     GPArotation,
 Suggests:
-    elasticnet, 
+    elasticnet,
     ggcorrplot,
     rmarkdown,
-    markdown,
     reshape2,
+    markdown,
     matlabr,
-    knitr, 
+    knitr,
     PMA,
+    testthat (>= 3.0.0)
 Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr, rmarkdown
 Encoding: UTF-8
-RoxygenNote: 7.1.0
+RoxygenNote: 7.2.3
+Config/testthat/edition: 3

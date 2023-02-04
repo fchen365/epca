@@ -26,7 +26,7 @@ where \verb{Z[i,j] = FUN(X[,i], Y[,j]}).
 x <- matrix(1:6, 2, 3)
 y <- matrix(7:12, 2, 3)
 ## The default is equivalent to `crossprod(x, y)`
-inner(x, y) 
+inner(x, y)
 ## We can compute the pair-wise Euclidean distance of columns.
 EuclideanDistance = function(x, y) crossprod(x, y)^2
 inner(x, y, EuclideanDistance)
