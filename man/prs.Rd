@@ -28,7 +28,7 @@ a \code{matrix} of the sparse estimate, of the same dimension as \code{crossprod
 }
 \description{
 This function is a helper function of \code{\link[=sma]{sma()}}.
-It performs polar docomposition, orthogonal rotation, and soft-thresholding shrinkage in order.
+It performs polar decomposition, orthogonal rotation, and soft-thresholding shrinkage in order.
 The three steps together enable sparse estimates of the SMA and SCA.
 }
 \details{

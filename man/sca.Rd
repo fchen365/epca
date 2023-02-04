@@ -126,9 +126,9 @@ X <- scale(Z \%*\% B \%*\% t(Y) + E)
 s.sca <- sca(X, k)
 s.sca
 
-## ------ example 2 ------ 
-## use the `pitprops` data from the `elasticnet` package 
-data(pitprops) 
+## ------ example 2 ------
+## use the `pitprops` data from the `elasticnet` package
+data(pitprops)
 
 ## find 3 sparse PCs
 s.sca <- sca(pitprops, 3, gamma = 4.5)
