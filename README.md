@@ -7,15 +7,15 @@
 
 <!-- badges: start -->
 
-[![lifecycle](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing)
+[![lifecycle](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://lifecycle.r-lib.org/articles/stages.html#maturing)
 <!-- badges: end -->
 
 `epca` is an R package for comprehending any data matrix that contains
 *low-rank* and *sparse* underlying signals of interest. The package
 currently features two key tools:
 
-  - `sca` for **s**parse principal **c**omponent **a**nalysis.
-  - `sma` for **s**parse **m**atrix **a**pproximation, a two-way data
+-   `sca` for **s**parse principal **c**omponent **a**nalysis.
+-   `sma` for **s**parse **m**atrix **a**pproximation, a two-way data
     analysis for simultaneously row and column dimensionality
     reductions.
 
