@@ -6,7 +6,7 @@
 #' It performs polar docomposition, orthogonal rotation, and soft-thresholding shrinkage in order.
 #' The three steps together enable sparse estimates of the SMA and SCA.
 #'
-#' @param x,z.hat the matrix product `crossprod(x, z.hat)` is the actual Polar-Rotate-Shrink object. `x` and `z.hat` are input separatedly because the former is additionally used to compute the proportion of variance explained, in the case when `order = TRUE`.
+#' @param x,z.hat the matrix product `crossprod(x, z.hat)` is the actual Polar-Rotate-Shrink object. `x` and `z.hat` are input separately because the former is additionally used to compute the proportion of variance explained, in the case when `order = TRUE`.
 #' @param gamma `numeric`, the sparsity parameter.
 #' @param order `logical`, whether to re-order the columns of the estimates (see Details below).
 #' @param epsilon `numeric`, tolerance of convergence precision (default to 0.00001).
