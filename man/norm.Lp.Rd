@@ -4,10 +4,10 @@
 \alias{norm.Lp}
 \title{Element-wise Matrix Norm}
 \usage{
-norm.Lp(mat, p = 1)
+norm.Lp(x, p = 1)
 }
 \arguments{
-\item{mat}{a \code{matrix} or \code{Matrix}.}
+\item{x}{a \code{matrix} or \code{Matrix}.}
 
 \item{p}{\code{numeric(1)}, the p for defining the Lp norm.}
 }

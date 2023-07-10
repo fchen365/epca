@@ -18,69 +18,57 @@ library(Matrix)
 library(tidyverse)
 ```
 
-This document provides three examples of how to use `epca` to explore your data.
+This vignette walks you through how you could easily use `epca` to explore your data.
 
-## Example 1: simulated data
+## Quick Start
 
-The first example shows how to call the two key functions: `sca` and `sma`.
-Let's simulate a rank-5 data matrix with some additive Gaussian noise.
-```{r simu}
-## simulate a rank-5 data matrix with some additive Gaussian noise 
+Using `sca` and `sma` is simple. The only required input are the data matrix `x` and `k`--the number of sparse PCs (or rank of matrix decomposition). 
+
+To illustrate, we simulated a $300 \times 50$ example rank-5 data matrix `x` with some additive Gaussian noise (the steps to generate this matrix is skipped; look for the source code of this vignette for details). 
+
+```{r simu, echo=FALSE}
+## simulate a rank-5 data matrix with some additive Gaussian noise
 n <- 300
 p <- 50
 k <- 5 ## rank
-Z <- shrinkage(svd(matrix(runif(n * k), n, k))$u, gamma = sqrt(n))
-B <- diag(5) * 3
-Y <- shrinkage(svd(matrix(runif(p * k), p, k))$u, gamma = sqrt(p))
-E <- matrix(rnorm(n * p, sd = .01), n, p)
-X <- scale(Z %*% B %*% t(Y) + E)
-```
-In the above code, matrices `Z` and `Y` are rank-5 and sparse. The `shrinkage()` function performs a soft-thresholding by default.
-
-Now, apply `sca` to find 5 sparse PCs. 
-```{r sca}
-## perform sparse PCA
-s.sca <- sca(X, k = 5)
-s.sca
+z <- shrinkage(svd(matrix(runif(n * k), n, k))$u, gamma = sqrt(n))
+b <- diag(5) * 3
+y <- shrinkage(svd(matrix(runif(p * k), p, k))$u, gamma = sqrt(p))
+e <- matrix(rnorm(n * p, sd = .01), n, p)
+x <- scale(z %*% b %*% t(y) + e)
 ```
 
-Similarly, we can do sparse matrix decomposition.
-```{r sma}
-## perform sparse matrix approximation
-s.sma <- sma(X, k = 5)
-s.sma
+```{r quickstart}
+## Sparse PCA
+sca(x, k = 5)
+## Sparse matrix approximation
+sma(x, k = 5)
 ```
 
-## Example 2: `pitprops` data 
-For the second example example, we use the `pitprops` data.
+## Example 1: `pitprops` data
 
-We apply the `sca` function to find `k = 3` sparse PCs with sparsity parameter `gamma = 4.5`. Here, the sparsity parameter (`gamma`) controls the L1 norm of the returned PC loadings. The default of `gamma` (if absent) is `sqrt(p * k)`, where `p` is the number of original variables. 
-```{r 3pc}
-## find 3 sparse PCs
-data("pitprops", package = "epca")
-s.sca <- sca(pitprops, k = 3, gamma = 4.5)
-print(s.sca, verbose = TRUE)
-```
-Here, option `verbose = TRUE` prints, for each PC, the original variable with non-zero loadings.
-
-The followings find 6 sparse PCs with `gamma = 6`. Note that the sparsity parameter for 
+In this example, we apply `sca` to the `pitprops` data set. This data is a Gram matrix (i.e., covariance matrix). For this, we just need to set `is.Cov = TRUE`. We look for 6 sparse PCs and set the sparsity parameter `gamma = 6`. Here, the sparsity parameter controls the L1 norm of the returned PC loadings. The default of `gamma` (if absent) is `sqrt(p * k)`, where `p` is the number of original variables. This default of `gamma` is usually well sufficiently large. 
 ```{r 6pc}
+data("pitprops", package = "epca")
 ## find 6 sparse PCs
-s.sca <- sca(pitprops, 6, gamma = 6)
+s.sca <- sca(pitprops, k = 6, gamma = 6)
+```
+
+There are two ways to inspect the sparse PC loadings. The first way is to directly extract the `loadings` component in the output object: `s.sca$loadings`. The second option is to call the `print` generic function with the `verbose = TRUE` option. It prints the original variables with non-zero loadings for each PC sequentially. 
+```{r print}
 print(s.sca, verbose = TRUE)
 ```
 
-## Example 3: single-cell RNA-seq data
+## Example 2: single-cell RNA-seq data
 
 ```{r import results, echo=FALSE}
 load("scrnaseq.rda")
 ```
 
-This example shows a large-scale application of sparse PCA to a single-cell RNA-seq data. 
-For this example, we use the human/mouse pancreas single-cell RNA-seq data from Baron et al. (2017). 
-
+This example shows a large-scale application of sparse PCA to a single-cell RNA-seq data. For this example, we use the human/mouse pancreas single-cell RNA-seq data from Baron et al. (2017).
 
 Fe used the single-cell RNA-seq data with the `scRNAseq` package. We removed the genes that do not have any variation across samples (i.e., zero standard deviation) and the cell types that contain fewer than 100 cells. This resulted in a sparse data matrix `pancreas` of 17499 genes (rows) and 8451 cells (columns) across nine cell types.
+
 ```{r import scRNA-seq data, eval=FALSE}
 # library(scRNAseq)
 dat <- BaronPancreasData('human')
@@ -103,7 +91,8 @@ label.select <- colData(dat) %>%
 dat1 <- dat[gene.select, colData(dat)$label %in% label.select$label]
 ```
 
-For SCA, we use the expression count matrix (`count`) as the input, where `count[i,j]` is the expression level of gene j in cell i, with 10.8\% being non-zero. 
+For SCA, we use the expression count matrix (`count`) as the input, where `count[i,j]` is the expression level of gene j in cell i, with 10.8% being non-zero.
+
 ```{r extract count matrix, eval=FALSE}
 count <- counts(dat1)
 # dim(count) ## 17499  8451
@@ -112,27 +101,30 @@ count <- counts(dat1)
 ```
 
 The dataset contains labels for each cell.
+
 ```{r extract cell label, eval=FALSE}
 label <- setNames(factor(dat1$label), colnames(dat1))
 ```
 
-Next, We applied `sca` to the transpose of `count` to find `k = 9` sparse gene PCs. Aiming for a small number of genes (i.e., non-zero loadings) in individual PCs, we set the sparsity parameter to `gamma = log(pk)`, which is approximately 12. 
-<!-- The algorithm took 24 iterations and about 5 minutes on a single processor (3.3GHz). -->
+Next, We applied `sca` to the transpose of `count` to find `k = 9` sparse gene PCs. Aiming for a small number of genes (i.e., non-zero loadings) in individual PCs, we set the sparsity parameter to `gamma = log(pk)`, which is approximately 12. <!-- The algorithm took 24 iterations and about 5 minutes on a single processor (3.3GHz). -->
+
 ```{r apply sca to scRNA-seq, eval=FALSE}
 scar <- sca(t(count), k = 9, gamma = 12,
              center = F, scale = F, 
              epsilon = 1e-3)
 ```
 
-We can exam the number of original genes included by each gene PC. 
+We can exam the number of original genes included by each gene PC.
+
 ```{r number of non-zeros}
 n.gene <- apply(!!scar$loadings, 2, sum)
 n.gene
 ```
-Each gene PC uses a handful of original genes. 
 
+Each gene PC uses a handful of original genes.
 
 We can plot the component scores of the nine PCs, with `dplyr` and `ggplot2` packages. Each panel displays one of nine cell types with the names of cell types and the number of cells reported on the top strips. For each cell type, a box depicts the component scores for nine sparse gene PCs.
+
 ```{r plot, fig.width=6, fig.height = 6, fig.cap="Scores of sparse gene principal components (PCs) stratified by cell types."}
 scar$scores %>%
   reshape2::melt(varnames = c("cell", "PC"), 
@@ -149,3 +141,4 @@ scar$scores %>%
 ```
 
 We observed that most of the gene PCs consist of one or a handful of genes, yet the component scores showed that these PCs distinguish different cell types effectively . For example, the PC 2 consists of only one gene (named SST), and the expression of the gene marks the "delta" cells among others. This result highlights power of scRNA-seq in capture cell-type specific information and suggests the applicability of our methods to biological data.
+

@@ -7,8 +7,9 @@
 rootmatrix(x)
 }
 \arguments{
-\item{x}{a symmetric \code{matrix}.}
+\item{x}{a symmetric \code{matrix} (will trigger error if not symmetric).}
 }
 \description{
-Find \code{X} from the Gram matrix (i.e., \code{crossprod(X)}).
+Find the root matrix (\code{x}) from the Gram matrix (i.e., \code{crossprod(x)}).
+This is also useful when the input is a covariance matrix, up to a scaling factor of n-1, where n is the sample size.
 }

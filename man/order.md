@@ -1,2 +1,2 @@
-**`order`**: In PCA (and SVD), the principal components (and the singular vectors) are ordered. For this, we order the sparse components (i.e., the columns of Z or Y) by their explained variance in the data, which is defined as `sum((A %*% y)^2)`, where y is a column of the sparse component.
-Note: not to be confused with the cumulative proportion of variance explained by Y (and Z), particularly when Y (and Z) is may not be strictly orthogonal.
+**`order`**: In PCA (and SVD), the principal components (and the singular vectors) are ordered. For this, we order the sparse components (i.e., the columns of `z` or `y`) by their explained variance in the data, which is defined as `sum((x %*% y)^2)`, where y is a column of the sparse component.
+Note: not to be confused with the cumulative proportion of variance explained by `y` (and `z`), particularly when `y` (and `z`) is may not be strictly orthogonal.

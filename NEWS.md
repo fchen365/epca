@@ -1,3 +1,8 @@
+# epca 1.1.0 (2023-02-03)
+
+* Fixed the unstable column ordering 
+* Updated vignette
+
 # epca 1.0.1 (2023-02-03)
 
 * Removed image pre-processing helper functions

@@ -4,10 +4,10 @@
 \alias{absmin.criteria}
 \title{Absmin Criteria}
 \usage{
-absmin.criteria(L)
+absmin.criteria(x)
 }
 \arguments{
-\item{L}{a \code{matrix} or \code{Matrix}.}
+\item{x}{a \code{matrix} or \code{Matrix}, initial factor loadings matrix for which the rotation criterian is to be optimized.}
 }
 \description{
 Calculate the absmin criteria.

@@ -4,23 +4,22 @@
 \alias{inner}
 \title{Matrix Inner Product}
 \usage{
-inner(X, Y, FUN = "crossprod", ...)
+inner(x, y, FUN = "crossprod", ...)
 }
 \arguments{
-\item{X, Y}{\code{matrix} or \code{Matrix}.}
+\item{x, y}{\code{matrix} or \code{Matrix}.}
 
 \item{FUN}{\code{function} or a \code{character(1)} name of base function.
-The function should take in two vectors as input and ouput a \code{numeric(1)} result.}
+The function should take in two vectors as input and output a \code{numeric(1)} result.}
 
 \item{...}{additional parameters for \code{FUN}.}
 }
 \value{
-\code{matrix}, inner product of \code{X} and \code{Y}.
+\code{matrix}, inner product of \code{x} and \code{y}.
 }
 \description{
-Calculate the custom matrix inner product,
-\code{Z = crossprod(X, Y)},
-where \verb{Z[i,j] = FUN(X[,i], Y[,j]}).
+Calculate the custom matrix inner product \code{z} of two matrices, \code{x} and \code{y},
+where \code{z[i,j] = FUN(x[,i], y[,j])}.
 }
 \examples{
 x <- matrix(1:6, 2, 3)

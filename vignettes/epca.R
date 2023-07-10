@@ -6,36 +6,29 @@ library(epca)
 library(Matrix)
 library(tidyverse)
 
-## ----simu---------------------------------------------------------------------
-## simulate a rank-5 data matrix with some additive Gaussian noise 
+## ----simu, echo=FALSE---------------------------------------------------------
+## simulate a rank-5 data matrix with some additive Gaussian noise
 n <- 300
 p <- 50
 k <- 5 ## rank
-Z <- shrinkage(svd(matrix(runif(n * k), n, k))$u, gamma = sqrt(n))
-B <- diag(5) * 3
-Y <- shrinkage(svd(matrix(runif(p * k), p, k))$u, gamma = sqrt(p))
-E <- matrix(rnorm(n * p, sd = .01), n, p)
-X <- scale(Z %*% B %*% t(Y) + E)
+z <- shrinkage(svd(matrix(runif(n * k), n, k))$u, gamma = sqrt(n))
+b <- diag(5) * 3
+y <- shrinkage(svd(matrix(runif(p * k), p, k))$u, gamma = sqrt(p))
+e <- matrix(rnorm(n * p, sd = .01), n, p)
+x <- scale(z %*% b %*% t(y) + e)
 
-## ----sca----------------------------------------------------------------------
-## perform sparse PCA
-s.sca <- sca(X, k = 5)
-s.sca
-
-## ----sma----------------------------------------------------------------------
-## perform sparse matrix approximation
-s.sma <- sma(X, k = 5)
-s.sma
-
-## ----3pc----------------------------------------------------------------------
-## find 3 sparse PCs
-data("pitprops", package = "epca")
-s.sca <- sca(pitprops, k = 3, gamma = 4.5)
-print(s.sca, verbose = TRUE)
+## ----quickstart---------------------------------------------------------------
+## Sparse PCA
+sca(x, k = 5)
+## Sparse matrix approximation
+sma(x, k = 5)
 
 ## ----6pc----------------------------------------------------------------------
+data("pitprops", package = "epca")
 ## find 6 sparse PCs
-s.sca <- sca(pitprops, 6, gamma = 6)
+s.sca <- sca(pitprops, k = 6, gamma = 6)
+
+## ----print--------------------------------------------------------------------
 print(s.sca, verbose = TRUE)
 
 ## ----import results, echo=FALSE-----------------------------------------------

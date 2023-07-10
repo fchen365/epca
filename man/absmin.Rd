@@ -4,12 +4,12 @@
 \alias{absmin}
 \title{Absmin Rotation}
 \usage{
-absmin(L, Tmat = diag(ncol(L)), normalize = FALSE, eps = 1e-05, maxit = 1000L)
+absmin(x, r0 = diag(ncol(x)), normalize = FALSE, eps = 1e-05, maxit = 1000L)
 }
 \arguments{
-\item{L}{a \code{matrix} or \code{Matrix}.}
+\item{x}{a \code{matrix} or \code{Matrix}, initial factor loadings matrix for which the rotation criterian is to be optimized.}
 
-\item{Tmat}{\code{matrix}, initial rotation matrix.}
+\item{r0}{\code{matrix}, initial rotation matrix.}
 
 \item{normalize}{logical. Should Kaiser normalization be performed?
     If so the rows of \code{x} are re-scaled to unit length before

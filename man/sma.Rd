@@ -5,8 +5,8 @@
 \title{Sparse Matrix Approximation}
 \usage{
 sma(
-  A,
-  k = min(5, dim(A)),
+  x,
+  k = min(5, dim(x)),
   gamma = NULL,
   rotate = c("varimax", "absmin"),
   shrink = c("soft", "hard"),
@@ -21,23 +21,23 @@ sma(
 )
 }
 \arguments{
-\item{A}{\code{matrix} or \code{Matrix} to be analyzed.}
+\item{x}{\code{matrix} or \code{Matrix} to be analyzed.}
 
 \item{k}{\code{integer}, rank of approximation.}
 
-\item{gamma}{\code{numeric(2)}, sparsity parameters. If \code{gamma} is \code{numeric(1)}, it is used for both left and right sparsity component (i.e, Z and Y). If absent, the two parameters are set as (default): \code{sqrt(nk)} and \code{sqrt(pk)} for Z and Y respectively, where n x p is the dimension of \code{A}.}
+\item{gamma}{\code{numeric(2)}, sparsity parameters. If \code{gamma} is \code{numeric(1)}, it is used for both left and right sparsity component (i.e, \code{z} and \code{y}). If absent, the two parameters are set as (default): \code{sqrt(nk)} and \code{sqrt(pk)} for \code{z} and \code{y} respectively, where n x p is the dimension of \code{x}.}
 
 \item{rotate}{\code{character(1)}, rotation method. Two options are currently available: "varimax" (default) or "absmin" (see details).}
 
 \item{shrink}{\code{character(1)}, shrinkage method, either "soft"- (default) or "hard"-thresholding (see details).}
 
-\item{center}{\code{logical}, whether to center columns of \code{A} (see \code{\link[=scale]{scale()}}).}
+\item{center}{\code{logical}, whether to center columns of \code{x} (see \code{\link[=scale]{scale()}}).}
 
-\item{scale}{\code{logical}, whether to scale columns of \code{A} (see \code{\link[=scale]{scale()}}).}
+\item{scale}{\code{logical}, whether to scale columns of \code{x} (see \code{\link[=scale]{scale()}}).}
 
 \item{normalize}{\code{logical}, whether to rows normalization should be done before and undone afterward the rotation (see details).}
 
-\item{order}{\code{logical}, whether to re-order the columns of the estimates (see details).}
+\item{order}{\code{logical}, whether to re-order the columns of the estimates (see Details below).}
 
 \item{flip}{\code{logical}, whether to flip the signs of the columns of estimates such that all columns are positive-skewed (see details).}
 
@@ -49,20 +49,20 @@ sma(
 }
 \value{
 an \code{sma} object that contains:
-\item{Z, B, Y}{the three parts in the SMA (i.e., \emph{ZBY'}).
-Z is a sparse n x k \code{matrix} that contains the row components (loadings).
-The row names of Z inherit the row names of \code{A}.
-B is a k x k \code{matrix} that contains the scores of SMA;
-the Frobenius norm of B equals to the total variance explained by the SMA.
-Y is a sparse n x k \code{matrix}that contains the column components (loadings).}
-The row names of Y inherit the column names of \code{A}.
+\item{\code{z}, \code{b}, \code{t(y)}}{the three parts in the SMA.
+\code{z} is a sparse n x k \code{matrix} that contains the row components (loadings).
+The row names of \code{z} inherit the row names of \code{x}.
+\code{b} is a k x k \code{matrix} that contains the scores of SMA;
+the Frobenius norm of \code{b} equals to the total variance explained by the SMA.
+\code{y} is a sparse n x k \code{matrix}that contains the column components (loadings).}
+The row names of \code{y} inherit the column names of \code{x}.
 \item{score}{the total variance explained by the SMA.
 This is the optimal objective value obtained.}
 \item{n.iter}{\code{integer}, the number of iteration taken.}
 }
 \description{
-Perform the sparse matrix approximation (SMA) of a data matrix X as three components: Z B Y',
-where Z and Y are sparse, and B is low-rank but not necessarily diagonal.
+Perform the sparse matrix approximation (SMA) of a data matrix \code{x} as three multiplicative components: \code{z}, \code{b}, and \code{t(y)},
+where \code{z} and \code{y} are sparse, and \code{b} is low-rank but not necessarily diagonal.
 }
 \details{
 \strong{\code{rotate}}: The \code{rotate} option specifies the rotation technique to
@@ -83,21 +83,21 @@ only sets the small elements to zeros.
 how any normalization should be done before rotation, and then undone
 after rotation. If normalize is \code{FALSE} (the default) no normalization
 is done. If normalize is \code{TRUE} then Kaiser normalization is done. (So
-squared row entries of normalized A sum to 1.0. This is sometimes called
-Horst normalization.) For \code{rotate="absmin"}, if \code{normalize} is a vector
-of length equal to the number of indicators (i.e., the number of rows of
-\code{A}), then the columns are divided by \code{normalize} before rotation and
-multiplied by \code{normalize} after rotation. Also, If \code{normalize} is a
-function then it should take \code{A} as an argument and return a vector
-which is used like the vector above.
+squared row entries of normalized \code{x} sum to 1.0. This is sometimes
+called Horst normalization.) For \code{rotate="absmin"}, if \code{normalize} is a
+vector of length equal to the number of indicators (i.e., the number of
+rows of \code{x}), then the columns are divided by \code{normalize} before
+rotation and multiplied by \code{normalize} after rotation. Also, If
+\code{normalize} is a function then it should take \code{x} as an argument and
+return a vector which is used like the vector above.
 
 \strong{\code{order}}: In PCA (and SVD), the principal components (and the
 singular vectors) are ordered. For this, we order the sparse components
-(i.e., the columns of Z or Y) by their explained variance in the data,
-which is defined as \code{sum((A \%*\% y)^2)}, where y is a column of the
+(i.e., the columns of \code{z} or \code{y}) by their explained variance in the
+data, which is defined as \code{sum((x \%*\% y)^2)}, where y is a column of the
 sparse component. Note: not to be confused with the cumulative
-proportion of variance explained by Y (and Z), particularly when Y (and
-Z) is may not be strictly orthogonal.
+proportion of variance explained by \code{y} (and \code{z}), particularly when \code{y}
+(and \code{z}) is may not be strictly orthogonal.
 
 \strong{\code{flip}}: The argument \code{flip} gives an indication of if and the
 columns of estimated sparse component should be flipped. Note that the
@@ -114,19 +114,19 @@ are non-negative.
 n <- 300
 p <- 50
 k <- 5 ## rank
-Z <- shrinkage(polar(matrix(runif(n * k), n, k)), sqrt(n))
-B <- diag(5) * 3
-Y <- shrinkage(polar(matrix(runif(p * k), p, k)), sqrt(p))
-E <- matrix(rnorm(n * p, sd = .01), n, p)
-X <- scale(Z \%*\% B \%*\% t(Y) + E)
+z <- shrinkage(polar(matrix(runif(n * k), n, k)), sqrt(n))
+b <- diag(5) * 3
+y <- shrinkage(polar(matrix(runif(p * k), p, k)), sqrt(p))
+e <- matrix(rnorm(n * p, sd = .01), n, p)
+x <- scale(z \%*\% b \%*\% t(y) + e)
 
 ## perform sparse matrix approximation
-s.sma <- sma(X, k)
+s.sma <- sma(x, k)
 s.sma
 
 }
 \references{
-Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA."
+Chen, F. and Rohe, K. (2020) "A New Basis for Sparse Principal Component Analysis."
 }
 \seealso{
 \link{sca}, \link{prs}

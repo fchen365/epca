@@ -4,20 +4,20 @@
 \alias{pve}
 \title{Proportion of Variance Explained (PVE)}
 \usage{
-pve(mat, V, is.cov = FALSE)
+pve(x, v, is.cov = FALSE)
 }
 \arguments{
-\item{mat}{\code{matrix} or \code{Matrix}, the original data matrix \code{X} or \code{cov(X) = crossprod(X) / (nrow(X) - 1)}}
+\item{x}{\code{matrix} or \code{Matrix}, the original data matrix or the Gram matrix.}
 
-\item{V}{\code{matrix}, coefficients of linear transformation, e.g., loadings (in PCA).}
+\item{v}{\code{matrix} or \code{Matrix}, coefficients of linear transformation, e.g., loadings (in PCA).}
 
-\item{is.cov}{\code{logical}, whether the input matrix is a covariance matrix or a Gram matrix.}
+\item{is.cov}{\code{logical}, whether the input matrix is a covariance matrix (or a Gram matrix).}
 }
 \value{
-a \code{numeric} value between 0 and 1, the proportion of variance in mat explained by Y.
+a \code{numeric} value between 0 and 1, the proportion of total variance in \code{x} explained by the PCs whose loadings are in \code{v}.
 }
 \description{
-Calculate the variance in a matrix explained by a set of linear transformation, (e.g. eigenvectors).
+Calculate the Proportion of variance explained by a set of linear transformation, (e.g. eigenvectors).
 }
 \examples{
 ## use the "swiss" data
@@ -25,4 +25,7 @@ Calculate the variance in a matrix explained by a set of linear transformation, 
 s.sca <- sca(swiss, 2, gamma = sqrt(ncol(swiss)))
 ld <- loadings(s.sca)
 pve(as.matrix(swiss), ld)
+}
+\references{
+Shen, H., & Huang, J. Z. (2008). "Sparse principal component analysis via regularized low rank matrix approximation." \emph{Journal of multivariate analysis}, 99(6), 1015-1034.
 }

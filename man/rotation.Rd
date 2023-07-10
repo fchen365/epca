@@ -43,13 +43,13 @@ less stable.
 how any normalization should be done before rotation, and then undone
 after rotation. If normalize is \code{FALSE} (the default) no normalization
 is done. If normalize is \code{TRUE} then Kaiser normalization is done. (So
-squared row entries of normalized A sum to 1.0. This is sometimes called
-Horst normalization.) For \code{rotate="absmin"}, if \code{normalize} is a vector
-of length equal to the number of indicators (i.e., the number of rows of
-\code{A}), then the columns are divided by \code{normalize} before rotation and
-multiplied by \code{normalize} after rotation. Also, If \code{normalize} is a
-function then it should take \code{A} as an argument and return a vector
-which is used like the vector above.
+squared row entries of normalized \code{x} sum to 1.0. This is sometimes
+called Horst normalization.) For \code{rotate="absmin"}, if \code{normalize} is a
+vector of length equal to the number of indicators (i.e., the number of
+rows of \code{x}), then the columns are divided by \code{normalize} before
+rotation and multiplied by \code{normalize} after rotation. Also, If
+\code{normalize} is a function then it should take \code{x} as an argument and
+return a vector which is used like the vector above.
 
 \strong{\code{flip}}: The argument \code{flip} gives an indication of if and the
 columns of estimated sparse component should be flipped. Note that the
@@ -67,7 +67,7 @@ fa <- factanal( ~., 2, data = swiss, rotation = "none")
 rotation(loadings(fa))
 }
 \references{
-Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA."
+Chen, F. and Rohe, K. (2020) "A New Basis for Sparse Principal Component Analysis."
 }
 \seealso{
 \link{prs}, \link{varimax}

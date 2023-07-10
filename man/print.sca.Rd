@@ -14,7 +14,7 @@
 \item{...}{additional input to generic \link{print}.}
 }
 \value{
-Print an \code{sma} object interactively.
+Print an \code{sca} object interactively.
 }
 \description{
 Print SCA

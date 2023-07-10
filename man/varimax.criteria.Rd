@@ -4,10 +4,10 @@
 \alias{varimax.criteria}
 \title{The varimax criterion}
 \usage{
-varimax.criteria(mat)
+varimax.criteria(x)
 }
 \arguments{
-\item{mat}{a \code{matrix} or \code{Matrix}.}
+\item{x}{a \code{matrix} or \code{Matrix}.}
 }
 \value{
 a \code{numeric} of evaluated varimax criterion.

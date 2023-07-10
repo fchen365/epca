@@ -38,7 +38,7 @@ shrink_x <- shrinkage(x, 1)
 
 }
 \references{
-Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA."
+Chen, F. and Rohe, K. (2020) "A New Basis for Sparse Principal Component Analysis."
 }
 \seealso{
 \link{prs}

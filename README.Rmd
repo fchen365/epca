@@ -71,5 +71,5 @@ If you encounter a clear bug, please file an issue with a minimal reproducible e
 
 ## Reference
 
-Chen F and Rohe K, "A New Basis for Sparse PCA." ([arXiv](https://arxiv.org/abs/2007.00596))
+Chen F and Rohe K, "A New Basis for Sparse Principal Component Analysis." ([arXiv](https://arxiv.org/abs/2007.00596))
 

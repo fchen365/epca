@@ -16,7 +16,7 @@
 #' @param x a non-negative matrix, nNode x nBlock,
 #' @param s integer, order of non-linear
 permColumn = function(x, s = 2) {
-  x[,order(colMeans(row(x) * abs(x)^s))]
+  x[, order(colMeans(row(x) * abs(x) ^ s))]
 }
 
 
@@ -66,15 +66,15 @@ misClustRate = function(cluster, truth) {
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #' Polar Decomposition
 #'
-#' Perform the polar decomposition of an n x p (n > p) matrix X into U P,
-#' where U is an n x p matrix with orthogonal columns (i.e. `crossprod(U)` is the identity matrix),
-#' and P is a p x p positive-semidefinite Hermitian matrix.
-#' The function returns the U matrix.
+#' Perform the polar decomposition of an n x p (n > p) matrix `x` into two parts: `u` and `h`,
+#' where `u` is an n x p unitary matrix with orthogonal columns (i.e. `crossprod(u)` is the identity matrix),
+#' and `h` is a p x p positive-semidefinite Hermitian matrix.
+#' The function returns the `u` matrix.
 #' This is a helper function of [prs()].
 #'
 #' @param x a `matrix` or `Matrix`, which is presumed full-rank.
 #' @return a `matrix` of the unitary part of the polar decomposition.
-#' @references Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA."
+#' @references Chen, F. and Rohe, K. (2020) "A New Basis for Sparse Principal Component Analysis."
 #' @examples
 #' x <- matrix(1:6, nrow = 3)
 #' polar_x <- polar(x)
@@ -84,20 +84,21 @@ polar = function(x) {
   stopifnot(nrow(x) >= ncol(x))
   stopifnot(Matrix::rankMatrix(x) == ncol(x))
   s = svd(x)
-  U <- tcrossprod(s$u, s$v)
-  # P <- s$v %*% diag(S$d) %*% t(s$v)
-  return(U)
+  u <- tcrossprod(s$u, s$v)
+  # h <- s$v %*% diag(s$d) %*% t(s$v)
+  return(u)
 }
 
 #' Find root matrix
 #'
-#' Find `X` from the Gram matrix (i.e., `crossprod(X)`).
-#' @param x a symmetric `matrix`.
+#' Find the root matrix (`x`) from the Gram matrix (i.e., `crossprod(x)`).
+#' This is also useful when the input is a covariance matrix, up to a scaling factor of n-1, where n is the sample size.
+#' @param x a symmetric `matrix` (will trigger error if not symmetric).
 rootmatrix <- function(x) {
   stopifnot(isSymmetric(x))
   x.eigen <- eigen(x)
   d <- x.eigen$values
-  d <- (d + abs(d))/2
+  d <- (d + abs(d)) / 2
   v <- x.eigen$vectors
   root = v %*% diag(sqrt(d)) %*% t(v)
   dimnames(root) <- dimnames(x)
@@ -106,15 +107,14 @@ rootmatrix <- function(x) {
 
 #' Matrix Inner Product
 #'
-#' Calculate the custom matrix inner product,
-#' `Z = crossprod(X, Y)`,
-#' where `Z[i,j] = FUN(X[,i], Y[,j]`).
+#' Calculate the custom matrix inner product `z` of two matrices, `x` and `y`,
+#' where `z[i,j] = FUN(x[,i], y[,j])`.
 #'
-#' @param X,Y `matrix` or `Matrix`.
+#' @param x,y `matrix` or `Matrix`.
 #' @param FUN `function` or a `character(1)` name of base function.
-#' The function should take in two vectors as input and ouput a `numeric(1)` result.
+#' The function should take in two vectors as input and output a `numeric(1)` result.
 #' @param ... additional parameters for `FUN`.
-#' @return `matrix`, inner product of `X` and `Y`.
+#' @return `matrix`, inner product of `x` and `y`.
 #' @examples
 #' x <- matrix(1:6, 2, 3)
 #' y <- matrix(7:12, 2, 3)
@@ -125,22 +125,25 @@ rootmatrix <- function(x) {
 #' inner(x, y, EuclideanDistance)
 #'
 #' @export
-inner = function(X, Y, FUN = "crossprod", ...) {
+inner = function(x, y, FUN = "crossprod", ...) {
   stopifnot(length(FUN) == 1)
-  if (is.character(FUN)) FUN <- match.fun(FUN)
-  res <- apply(X, 2, function(x) {
-    apply(Y, 2, function(y) FUN(x, y))
+  if (is.character(FUN))
+    FUN <- match.fun(FUN)
+  res <- apply(x, 2, function(x) {
+    apply(y, 2, function(y)
+      FUN(x, y))
   })
   t(res)
 }
 
 #' Proportion of Variance Explained (PVE)
 #'
-#' Calculate the variance in a matrix explained by a set of linear transformation, (e.g. eigenvectors).
-#' @param mat `matrix` or `Matrix`, the original data matrix `X` or `cov(X) = crossprod(X) / (nrow(X) - 1)`
-#' @param V `matrix`, coefficients of linear transformation, e.g., loadings (in PCA).
-#' @param is.cov `logical`, whether the input matrix is a covariance matrix or a Gram matrix.
-#' @return a `numeric` value between 0 and 1, the proportion of variance in mat explained by Y.
+#' Calculate the Proportion of variance explained by a set of linear transformation, (e.g. eigenvectors).
+#' @param x `matrix` or `Matrix`, the original data matrix or the Gram matrix.
+#' @param v `matrix` or `Matrix`, coefficients of linear transformation, e.g., loadings (in PCA).
+#' @param is.cov `logical`, whether the input matrix is a covariance matrix (or a Gram matrix).
+#' @return a `numeric` value between 0 and 1, the proportion of total variance in `x` explained by the PCs whose loadings are in `v`.
+#' @references Shen, H., & Huang, J. Z. (2008). "Sparse principal component analysis via regularized low rank matrix approximation." *Journal of multivariate analysis*, 99(6), 1015-1034.
 #' @examples
 #' ## use the "swiss" data
 #' ## find two sparse PCs
@@ -148,34 +151,37 @@ inner = function(X, Y, FUN = "crossprod", ...) {
 #' ld <- loadings(s.sca)
 #' pve(as.matrix(swiss), ld)
 #' @export
-pve = function(mat, V, is.cov = FALSE) {
-  if (!is.cov) {
-    # V <- as.matrix(V)
-    XV = mat %*% V %*% solve(t(V) %*% V) %*% t(V)
-    Matrix::norm(XV, type = 'F')^2 /
-      Matrix::norm(mat, 'F')^2
-  } else {
-    # V <- as.matrix(V)
-    ## total variance
-    TV <- sum(svd(mat)$d ^ 2)
-    ## column length, replace 0 with 1
-    CL <- sqrt(colSums(V ^ 2))
-    CL <- ifelse(CL, CL, 0)
-    ## component scores
-    S <- mat %*% (V / CL)
-    ## explained variance
-    EV <- diag(qr.R(qr(S)) ^ 2)
-    sum(EV) / TV
-    # CI = solve(crossprod(V))
-    # sum(diag(V %*% CI %*% t(V) %*% mat %*% V %*% CI %*% t(V)))
-  }
+pve = function(x, v, is.cov = FALSE) {
+  # if (!is.cov) {
+  # v <- as.matrix(v)
+  xv = x %*% v %*% solve(t(v) %*% v) %*% t(v)
+  Matrix::norm(xv, type = 'F') ^ 2 /
+    Matrix::norm(x, 'F') ^ 2
+  # } else {
+  #   stopifnot("'x' must be symmetric when is.cov = TRUE." = isSymmetric(x))
+  #   ## use the root matrix
+  #   x <- rootmatrix(x)
+  #   # v <- as.matrix(v)
+  #   ## total variance
+  #   tv <- sum(svd(x)$d ^ 2)
+  #   ## column length, replace 0 with 1
+  #   v.norm <- sqrt(colSums(v ^ 2))
+  #   v.norm <- ifelse(v.norm, v.norm, 1)
+  #   ## component scores
+  #   s <- x %*% t(t(v) / v.norm)
+  #   ## explained variance
+  #   ev <- diag(qr.R(qr(s)) ^ 2)
+  #   sum(ev) / tv
+  #   # ci = solve(crossprod(v))
+  #   # sum(diag(v %*% ci %*% t(v) %*% x %*% v %*% ci %*% t(v)))
+  # }
 }
 
 #' Cumulative Proportion of Variance Explained (CPVE)
 #'
 #' Calculate the CPVE.
 #' @inheritParams pve
-#' @return a `numeric` vector of length `ncol(V)`, the i-th value is the CPVE of the first i columns in `V`.
+#' @return a `numeric` vector of length `ncol(v)`, the i-th value is the CPVE of the first i columns in `v`.
 #' @seealso [pve]
 #' @examples
 #' ## use the "swiss" data
@@ -185,14 +191,12 @@ pve = function(mat, V, is.cov = FALSE) {
 #' cpve(as.matrix(swiss), ld)
 #'
 #' @export
-cpve <- function(mat, V, is.cov = FALSE) {
-  sdev = apply(mat %*% V, 2, stats::sd)
-  ord <- order(sdev, decreasing = TRUE)
-  pve <- rep(0, ncol(V))
-  for (i in 1:ncol(V)) {
-    pve[i] <- pve(mat, V[,ord[1:i]], is.cov)
+cpve <- function(x, v, is.cov = FALSE) {
+  cpve <- rep(0, ncol(v))
+  for (i in 1:ncol(v)) {
+    cpve[i] <- pve(x, v[, 1:i, drop = F], is.cov = is.cov)
   }
-  pve
+  cpve
 }
 
 #' Matrix Column Distance
@@ -239,24 +243,29 @@ dist.matrix = function(x, y, method = 'euclidean') {
 
   if (method == "sine") {
     ## sin ^ 2
-    FUN = function(x, y) 1 - crossprod(x, y)^2
+    FUN = function(x, y)
+      1 - crossprod(x, y) ^ 2
   } else if (method == "euclidean") {
     ## euclidean
-    FUN = function(x, y) sqrt(sum((x - y) ^ 2))
+    FUN = function(x, y)
+      sqrt(sum((x - y) ^ 2))
   } else if (method == "maximum") {
     ## supremum norm (manhattan)
-    FUN = function(x, y) max(abs(x - y))
+    FUN = function(x, y)
+      max(abs(x - y))
   }
 
   dist = inner(x, y, FUN)
   match = clue::solve_LSAP(dist, maximum = FALSE)
   value = dist[cbind(seq_along(match), match)]
 
-  list(dist = dist,
-       match = match,
-       value = value,
-       method = method,
-       nrow = nrow(x))
+  list(
+    dist = dist,
+    match = match,
+    value = value,
+    method = method,
+    nrow = nrow(x)
+  )
 }
 
 #' Matrix Distance
@@ -284,7 +293,7 @@ distance <- function(x, y, method = "euclidean") {
 #' @includeRmd man/normalize.md details
 #' @includeRmd man/flip.md details
 #' @return the rotated matrix of the same dimension as `x`.
-#' @references Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA."
+#' @references Chen, F. and Rohe, K. (2020) "A New Basis for Sparse Principal Component Analysis."
 #' @seealso [prs], [varimax]
 #' @examples
 #' ## use the "swiss" data
@@ -302,8 +311,10 @@ rotation = function(x,
 
   if (rotate == "varimax") {
     rotate.fun <- varimax
-  } else {
+  } else if (rotate == "absmin") {
     rotate.fun <- absmin
+  } else {
+    stop("Unrecognized rotation method.")
   }
   r = rotate.fun(x, normalize = normalize, eps = eps)
   y = x %*% r$rotmat
@@ -319,7 +330,7 @@ rotation = function(x,
 #' The varimax criterion
 #'
 #' Calculate the varimax criterion
-#' @param mat a `matrix` or `Matrix`.
+#' @param x a `matrix` or `Matrix`.
 #' @return a `numeric` of evaluated varimax criterion.
 #' @references \href{https://en.wikipedia.org/wiki/Varimax_rotation}{Varimax rotation (Wikipedia)}
 #' @examples
@@ -335,8 +346,8 @@ rotation = function(x,
 #' varimax.criteria(rlds)
 #'
 #' @export
-varimax.criteria = function(mat) {
-  sum(apply(mat^2, 2, stats::var))
+varimax.criteria = function(x) {
+  sum(apply(x ^ 2, 2, stats::var))
 }
 
 #' Varimax Rotation
@@ -360,21 +371,24 @@ varimax = function(x,
   nc <- ncol(x)
   if (nc < 2) {
     warnings("Rotation of a single-column matrix is invalid.")
-    return(list(loadings = x,
-                rotmat = matrix(1),
-                n.iter = 1))
+    return(list(
+      loadings = x,
+      rotmat = matrix(1),
+      n.iter = 1
+    ))
   }
   if (normalize) {
-    sc <- sqrt(drop(apply(x, 1L, function(x) sum(x^2))))
-    x <- x/sc
+    sc <- sqrt(drop(apply(x, 1L, function(x)
+      sum(x ^ 2))))
+    x <- x / sc
   }
   p <- nrow(x)
   TT <- diag(nc)
   d <- 0
   for (i in seq_len(maxit)) {
     z <- x %*% TT
-    cm2 = colMeans(z^2)
-    B <- t(x) %*% (z^3 - z %*% diag(cm2))
+    cm2 = colMeans(z ^ 2)
+    B <- t(x) %*% (z ^ 3 - z %*% diag(cm2))
     sB <- La.svd(B)
     TT <- sB$u %*% sB$vt
     dpast <- d
@@ -386,7 +400,9 @@ varimax = function(x,
   if (normalize)
     z <- z * sc
   dimnames(z) <- dimnames(x)
-  list(loadings = z, rotmat = TT, n.iter = i)
+  list(loadings = z,
+       rotmat = TT,
+       n.iter = i)
 }
 
 #' Absmin Criteria
@@ -394,8 +410,8 @@ varimax = function(x,
 #' Calculate the absmin criteria.
 #' This is a helper function for [absmin].
 #' @inheritParams absmin
-absmin.criteria = function(L) {
-  sum(abs(L))
+absmin.criteria = function(x) {
+  sum(abs(x))
 }
 
 #' Gradient of Absmin Criterion
@@ -409,9 +425,9 @@ absmin.criteria = function(L) {
 #' ## NOT for users to call.
 #' }
 #' @export
-vgQ.absmin = function (L) {
-  list(Gq = sign(L),
-       f = absmin.criteria(L),
+vgQ.absmin = function (x) {
+  list(Gq = sign(x),
+       f = absmin.criteria(x),
        Method = "absmin")
 }
 
@@ -420,8 +436,8 @@ vgQ.absmin = function (L) {
 #' Given a p x k matrix `x`,
 #' finds the orthogonal matrix (rotation) that minimizes the [absmin.criteria].
 #'
-#' @param L a `matrix` or `Matrix`.
-#' @param Tmat `matrix`, initial rotation matrix.
+#' @param x a `matrix` or `Matrix`, initial factor loadings matrix for which the rotation criterian is to be optimized.
+#' @param r0 `matrix`, initial rotation matrix.
 #' @inheritParams stats::varimax
 #' @inheritParams varimax
 #' @return A list with three elements:
@@ -429,28 +445,34 @@ vgQ.absmin = function (L) {
 #' \item{rotmat}{the (orthogonal) rotation matrix.}
 #' \item{n.iter}{the number of iteration taken.}
 #' @seealso `GPArotation::GPForth`
-absmin <- function(L,
-                   Tmat = diag(ncol(L)),
+absmin <- function(x,
+                   r0 = diag(ncol(x)),
                    normalize = FALSE,
                    eps = 1e-5,
                    maxit = 1000L) {
-  nc <- ncol(L)
+  nc <- ncol(x)
   if (nc < 2) {
     warnings("Rotation of a single-column matrix is invalid.")
-    return(list(loadings = L,
-                rotmat = matrix(1),
-                n.iter = 1))
+    return(list(
+      loadings = x,
+      rotmat = matrix(1),
+      n.iter = 1
+    ))
   }
 
-  res <- GPArotation::GPForth(L,
-                              Tmat = Tmat,
-                              method = "absmin",
-                              normalize = normalize,
-                              eps = eps,
-                              maxit = maxit)
-  list(loadings = res$loadings,
-       rotmat = res$Th,
-       n.iter = nrow(res$Table))
+  res <- GPArotation::GPForth(
+    A = x,
+    Tmat = r0,
+    method = "absmin",
+    normalize = normalize,
+    eps = eps,
+    maxit = maxit
+  )
+  list(
+    loadings = res$loadings,
+    rotmat = res$Th,
+    n.iter = nrow(res$Table)
+  )
 }
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -468,7 +490,7 @@ exp.frac <- function(a, num, den) {
     stop("num and den should be meaningful integers.")
   }
   if (den %% 2) {
-    res = (abs(a) ^ (1/den)) * sign(a)
+    res = (abs(a) ^ (1 / den)) * sign(a)
   } else {
     res = a ^ (1 / den)
   }
@@ -479,17 +501,17 @@ exp.frac <- function(a, num, den) {
 #'
 #' Compute element-wise matrix Lp-norm.
 #' This is a helper function to [shrinkage()].
-#' @param mat a `matrix` or `Matrix`.
+#' @param x a `matrix` or `Matrix`.
 #' @param p `numeric(1)`, the p for defining the Lp norm.
 #' @return `numeric(1)`, the absolute sum of all elements.
-norm.Lp = function(mat, p = 1) {
+norm.Lp = function(x, p = 1) {
   stopifnot(p >= 0 && is.numeric(p))
   if (p == 0) {
-    sum(!!mat)
+    sum(!!x)
   } else if (is.infinite(p)) {
-    max(abs(mat))
+    max(abs(x))
   } else {
-    sum(abs(mat) ^ p) ^ (1 / p)
+    sum(abs(x) ^ p) ^ (1 / p)
   }
 }
 
@@ -524,7 +546,7 @@ hard <- function (x, t) {
 #' @return a `list` with two components:
 #' \item{matrix}{matrix, the matrix that results from soft-thresholding}
 #' \item{norm}{numeric, the norm of the matrix after soft-thresholding. This value is close to constraint if using the second option.}
-#' @references Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA."
+#' @references Chen, F. and Rohe, K. (2020) "A New Basis for Sparse Principal Component Analysis."
 #' @seealso [prs]
 #' @examples
 #' x <- matrix(1:6, nrow = 3)
@@ -546,7 +568,8 @@ shrinkage = function(x,
   p <- 1 * (shrink == "soft")
 
   ## no shrinkage needed
-  if (norm.Lp(x, p) <= gamma) return(x)
+  if (norm.Lp(x, p) <= gamma)
+    return(x)
 
   ## binary search
   lower = 0 ## whose Lp norm > gamma

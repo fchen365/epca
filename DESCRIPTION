@@ -1,8 +1,8 @@
 Package: epca
 Type: Package
 Title: Exploratory Principal Component Analysis
-Version: 1.0.1
-Date: 2023-02-03
+Version: 1.1.0
+Date: 2023-07-10
 Authors@R: 
     person(given = "Fan", family = "Chen", 
            role = c("aut", "cre"), 
@@ -18,15 +18,15 @@ Imports:
     clue,
     irlba,
     Matrix,
-    RSpectra,
-    tidyverse,
     GPArotation,
 Suggests:
     elasticnet,
     ggcorrplot,
+    tidyverse,
     rmarkdown,
     reshape2,
     markdown,
+    RSpectra,
     matlabr,
     knitr,
     PMA,

@@ -5,14 +5,14 @@
 \title{Sparse Component Analysis}
 \usage{
 sca(
-  A,
-  k = min(5, dim(A)),
+  x,
+  k = min(5, dim(x)),
   gamma = NULL,
   is.cov = FALSE,
   rotate = c("varimax", "absmin"),
   shrink = c("soft", "hard"),
   center = TRUE,
-  scale = TRUE,
+  scale = FALSE,
   normalize = FALSE,
   order = TRUE,
   flip = TRUE,
@@ -22,25 +22,25 @@ sca(
 )
 }
 \arguments{
-\item{A}{\code{matrix} or \code{Matrix} to be analyzed.}
+\item{x}{\code{matrix} or \code{Matrix} to be analyzed.}
 
 \item{k}{\code{integer}, rank of approximation.}
 
-\item{gamma}{\code{numeric(1)}, sparsity parameter, default to \code{sqrt(pk)}, where n x p is the dimension of \code{A}.}
+\item{gamma}{\code{numeric(1)}, sparsity parameter, default to \code{sqrt(pk)}, where n x p is the dimension of \code{x}.}
 
-\item{is.cov}{\code{logical}, whether the \code{A} is a covariance matrix or Gram matrix (i.e., \code{crossprod(X)}). This function presumes that \code{A} is \emph{not} covariance matrix.}
+\item{is.cov}{\code{logical}, default to \code{FALSE}, whether the \code{x} is a covariance matrix (or Gram matrix, i.e., \code{crossprod()} of some design matrix). If \code{TRUE}, both \code{center} and \code{scale} will be ignored/skipped.}
 
 \item{rotate}{\code{character(1)}, rotation method. Two options are currently available: "varimax" (default) or "absmin" (see details).}
 
 \item{shrink}{\code{character(1)}, shrinkage method, either "soft"- (default) or "hard"-thresholding (see details).}
 
-\item{center}{\code{logical}, whether to center columns of \code{A} (see \code{\link[=scale]{scale()}}).}
+\item{center}{\code{logical}, whether to center columns of \code{x} (see \code{\link[=scale]{scale()}}).}
 
-\item{scale}{\code{logical}, whether to scale columns of \code{A} (see \code{\link[=scale]{scale()}}).}
+\item{scale}{\code{logical}, whether to scale columns of \code{x} (see \code{\link[=scale]{scale()}}).}
 
 \item{normalize}{\code{logical}, whether to rows normalization should be done before and undone afterward the rotation (see details).}
 
-\item{order}{\code{logical}, whether to re-order the columns of the estimates (see details).}
+\item{order}{\code{logical}, whether to re-order the columns of the estimates (see Details below).}
 
 \item{flip}{\code{logical}, whether to flip the signs of the columns of estimates such that all columns are positive-skewed (see details).}
 
@@ -53,13 +53,12 @@ sca(
 \value{
 an \code{sca} object that contains:
 \item{loadings}{\code{matrix}, sparse loadings of PCs.}
-\item{scores}{an n x k \code{matrix}, the component scores.}
-\item{sdev}{a \code{numeric} vector of length \code{k}, standard deviation of each columns of scores. These may not sum to exactly 1 because of a slight loss of orthogonality.}
-\item{pve}{a \code{numeric} vector of length \code{k}, cumulative proportion of variance in \code{A} explained by the top PCs.}
+\item{scores}{an n x k \code{matrix}, the component scores, calculated using centered (and/or scaled) \code{x}. This will only be available when \code{is.cov = FALSE}.}
+\item{cpve}{a \code{numeric} vector of length \code{k}, cumulative proportion of variance in \code{x} explained by the top PCs (after center and/or scale).}
 \item{center}{\code{logical}, this records the \code{center} parameter.}
 \item{scale}{\code{logical}, this records the \code{scale} parameter.}
 \item{n.iter}{\code{integer}, number of iteration taken.}
-\item{n.obs}{\code{integer}, sample size, that is, \code{nrow(A)}.}
+\item{n.obs}{\code{integer}, sample size, that is, \code{nrow(x)}.}
 }
 \description{
 \code{sca} performs sparse principal components analysis on the given numeric data matrix.
@@ -84,21 +83,21 @@ only sets the small elements to zeros.
 how any normalization should be done before rotation, and then undone
 after rotation. If normalize is \code{FALSE} (the default) no normalization
 is done. If normalize is \code{TRUE} then Kaiser normalization is done. (So
-squared row entries of normalized A sum to 1.0. This is sometimes called
-Horst normalization.) For \code{rotate="absmin"}, if \code{normalize} is a vector
-of length equal to the number of indicators (i.e., the number of rows of
-\code{A}), then the columns are divided by \code{normalize} before rotation and
-multiplied by \code{normalize} after rotation. Also, If \code{normalize} is a
-function then it should take \code{A} as an argument and return a vector
-which is used like the vector above.
+squared row entries of normalized \code{x} sum to 1.0. This is sometimes
+called Horst normalization.) For \code{rotate="absmin"}, if \code{normalize} is a
+vector of length equal to the number of indicators (i.e., the number of
+rows of \code{x}), then the columns are divided by \code{normalize} before
+rotation and multiplied by \code{normalize} after rotation. Also, If
+\code{normalize} is a function then it should take \code{x} as an argument and
+return a vector which is used like the vector above.
 
 \strong{\code{order}}: In PCA (and SVD), the principal components (and the
 singular vectors) are ordered. For this, we order the sparse components
-(i.e., the columns of Z or Y) by their explained variance in the data,
-which is defined as \code{sum((A \%*\% y)^2)}, where y is a column of the
+(i.e., the columns of \code{z} or \code{y}) by their explained variance in the
+data, which is defined as \code{sum((x \%*\% y)^2)}, where y is a column of the
 sparse component. Note: not to be confused with the cumulative
-proportion of variance explained by Y (and Z), particularly when Y (and
-Z) is may not be strictly orthogonal.
+proportion of variance explained by \code{y} (and \code{z}), particularly when \code{y}
+(and \code{z}) is may not be strictly orthogonal.
 
 \strong{\code{flip}}: The argument \code{flip} gives an indication of if and the
 columns of estimated sparse component should be flipped. Note that the
@@ -116,31 +115,27 @@ are non-negative.
 n <- 300
 p <- 50
 k <- 5 ## rank
-Z <- shrinkage(polar(matrix(runif(n * k), n, k)), sqrt(n))
-B <- diag(5) * 3
-Y <- shrinkage(polar(matrix(runif(p * k), p, k)), sqrt(p))
-E <- matrix(rnorm(n * p, sd = .01), n, p)
-X <- scale(Z \%*\% B \%*\% t(Y) + E)
+z <- shrinkage(polar(matrix(runif(n * k), n, k)), sqrt(n))
+b <- diag(5) * 3
+y <- shrinkage(polar(matrix(runif(p * k), p, k)), sqrt(p))
+e <- matrix(rnorm(n * p, sd = .01), n, p)
+x <- scale(z \%*\% b \%*\% t(y) + e)
 
 ## perform sparse PCA
-s.sca <- sca(X, k)
+s.sca <- sca(x, k)
 s.sca
 
 ## ------ example 2 ------
 ## use the `pitprops` data from the `elasticnet` package
 data(pitprops)
 
-## find 3 sparse PCs
-s.sca <- sca(pitprops, 3, gamma = 4.5)
-print(s.sca, verbose = TRUE)
-
 ## find 6 sparse PCs
-s.sca <- sca(pitprops, 6, gamma = 6)
+s.sca <- sca(pitprops, 6, gamma = 6, is.cov = TRUE)
 print(s.sca, verbose = TRUE)
 
 }
 \references{
-Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA."
+Chen, F. and Rohe, K. (2020) "A New Basis for Sparse Principal Component Analysis."
 }
 \seealso{
 \link{sma}, \link{prs}

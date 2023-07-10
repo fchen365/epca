@@ -4,10 +4,10 @@
 \alias{prs}
 \title{Polar-Rotate-Shrink}
 \usage{
-prs(X, Z.hat, gamma, rotate, shrink, normalize, order, flip, epsilon)
+prs(x, z.hat, gamma, rotate, shrink, normalize, order, flip, epsilon)
 }
 \arguments{
-\item{X, Z.hat}{the matrix product \code{A <- crossprod(X, Z.hat)} is the input. \code{X} and \code{Z.hat} are separated because the former is additionally used to compute the proportion of variance explained, in the case when \code{order = TRUE}.}
+\item{x, z.hat}{the matrix product \code{crossprod(x, z.hat)} is the actual Polar-Rotate-Shrink object. \code{x} and \code{z.hat} are input separatedly because the former is additionally used to compute the proportion of variance explained, in the case when \code{order = TRUE}.}
 
 \item{gamma}{\code{numeric}, the sparsity parameter.}
 
@@ -17,18 +17,18 @@ prs(X, Z.hat, gamma, rotate, shrink, normalize, order, flip, epsilon)
 
 \item{normalize}{\code{logical}, whether to rows normalization should be done before and undone afterward the rotation (see details).}
 
-\item{order}{\code{logical}, whether to re-order the columns of the estimates (see details).}
+\item{order}{\code{logical}, whether to re-order the columns of the estimates (see Details below).}
 
 \item{flip}{\code{logical}, whether to flip the signs of the columns of estimates such that all columns are positive-skewed (see details).}
 
 \item{epsilon}{\code{numeric}, tolerance of convergence precision (default to 0.00001).}
 }
 \value{
-a \code{matrix} of the sparse estimate, of the same dimension as \code{crossprod(X, Z.hat)}.
+a \code{matrix} of the sparse estimate, of the same dimension as \code{crossprod(x, z.hat)}.
 }
 \description{
 This function is a helper function of \code{\link[=sma]{sma()}}.
-It performs polar decomposition, orthogonal rotation, and soft-thresholding shrinkage in order.
+It performs polar docomposition, orthogonal rotation, and soft-thresholding shrinkage in order.
 The three steps together enable sparse estimates of the SMA and SCA.
 }
 \details{
@@ -50,21 +50,21 @@ only sets the small elements to zeros.
 how any normalization should be done before rotation, and then undone
 after rotation. If normalize is \code{FALSE} (the default) no normalization
 is done. If normalize is \code{TRUE} then Kaiser normalization is done. (So
-squared row entries of normalized A sum to 1.0. This is sometimes called
-Horst normalization.) For \code{rotate="absmin"}, if \code{normalize} is a vector
-of length equal to the number of indicators (i.e., the number of rows of
-\code{A}), then the columns are divided by \code{normalize} before rotation and
-multiplied by \code{normalize} after rotation. Also, If \code{normalize} is a
-function then it should take \code{A} as an argument and return a vector
-which is used like the vector above.
+squared row entries of normalized \code{x} sum to 1.0. This is sometimes
+called Horst normalization.) For \code{rotate="absmin"}, if \code{normalize} is a
+vector of length equal to the number of indicators (i.e., the number of
+rows of \code{x}), then the columns are divided by \code{normalize} before
+rotation and multiplied by \code{normalize} after rotation. Also, If
+\code{normalize} is a function then it should take \code{x} as an argument and
+return a vector which is used like the vector above.
 
 \strong{\code{order}}: In PCA (and SVD), the principal components (and the
 singular vectors) are ordered. For this, we order the sparse components
-(i.e., the columns of Z or Y) by their explained variance in the data,
-which is defined as \code{sum((A \%*\% y)^2)}, where y is a column of the
+(i.e., the columns of \code{z} or \code{y}) by their explained variance in the
+data, which is defined as \code{sum((x \%*\% y)^2)}, where y is a column of the
 sparse component. Note: not to be confused with the cumulative
-proportion of variance explained by Y (and Z), particularly when Y (and
-Z) is may not be strictly orthogonal.
+proportion of variance explained by \code{y} (and \code{z}), particularly when \code{y}
+(and \code{z}) is may not be strictly orthogonal.
 
 \strong{\code{flip}}: The argument \code{flip} gives an indication of if and the
 columns of estimated sparse component should be flipped. Note that the
@@ -77,7 +77,7 @@ means that for each column, the sum of cubic elements (i.e., \code{sum(x^3)})
 are non-negative.
 }
 \references{
-Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA."
+Chen, F. and Rohe, K. (2020) "A New Basis for Sparse Principal Component Analysis."
 }
 \seealso{
 \link{sma}, \link{sca}, \link{polar}, \link{rotation}, \link{shrinkage}

@@ -13,10 +13,10 @@ polar(x)
 a \code{matrix} of the unitary part of the polar decomposition.
 }
 \description{
-Perform the polar decomposition of an n x p (n > p) matrix X into U P,
-where U is an n x p matrix with orthogonal columns (i.e. \code{crossprod(U)} is the identity matrix),
-and P is a p x p positive-semidefinite Hermitian matrix.
-The function returns the U matrix.
+Perform the polar decomposition of an n x p (n > p) matrix \code{x} into two parts: \code{u} and \code{h},
+where \code{u} is an n x p unitary matrix with orthogonal columns (i.e. \code{crossprod(u)} is the identity matrix),
+and \code{h} is a p x p positive-semidefinite Hermitian matrix.
+The function returns the \code{u} matrix.
 This is a helper function of \code{\link[=prs]{prs()}}.
 }
 \examples{
@@ -25,5 +25,5 @@ polar_x <- polar(x)
 
 }
 \references{
-Chen, F. and Rohe, K. (2020) "A New Basis for Sparse PCA."
+Chen, F. and Rohe, K. (2020) "A New Basis for Sparse Principal Component Analysis."
 }

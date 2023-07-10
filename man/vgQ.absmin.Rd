@@ -4,10 +4,10 @@
 \alias{vgQ.absmin}
 \title{Gradient of Absmin Criterion}
 \usage{
-vgQ.absmin(L)
+vgQ.absmin(x)
 }
 \arguments{
-\item{L}{a \code{matrix} or \code{Matrix}.}
+\item{x}{a \code{matrix} or \code{Matrix}, initial factor loadings matrix for which the rotation criterian is to be optimized.}
 }
 \value{
 a list required by \code{GPArotation::GPForth} for the absmin rotation.
