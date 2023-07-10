@@ -7,7 +7,7 @@
 prs(x, z.hat, gamma, rotate, shrink, normalize, order, flip, epsilon)
 }
 \arguments{
-\item{x, z.hat}{the matrix product \code{crossprod(x, z.hat)} is the actual Polar-Rotate-Shrink object. \code{x} and \code{z.hat} are input separatedly because the former is additionally used to compute the proportion of variance explained, in the case when \code{order = TRUE}.}
+\item{x, z.hat}{the matrix product \code{crossprod(x, z.hat)} is the actual Polar-Rotate-Shrink object. \code{x} and \code{z.hat} are input separately because the former is additionally used to compute the proportion of variance explained, in the case when \code{order = TRUE}.}
 
 \item{gamma}{\code{numeric}, the sparsity parameter.}
 
