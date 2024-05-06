@@ -64,5 +64,5 @@ reproducible example on
 
 ## Reference
 
-Chen F and Rohe K, “A New Basis for Sparse PCA.”
-([arXiv](https://arxiv.org/abs/2007.00596))
+Chen, F., & Rohe, K. (2023). A New Basis for Sparse Principal Component Analysis. _Journal of Computational and Graphical Statistics_, 1-14.
+([DOI](https://doi.org/10.1080/10618600.2023.2256502))
